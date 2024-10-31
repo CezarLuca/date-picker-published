@@ -1,6 +1,6 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Form from "../components/Form";
 
 const FormPageWithoutSuspense: React.FC = () => {
@@ -22,4 +22,10 @@ const FormPageWithoutSuspense: React.FC = () => {
     );
 };
 
-export default FormPageWithoutSuspense;
+const FormPageWithSuspense: React.FC = () => (
+    <Suspense fallback={<div>Loading...</div>}>
+        <FormPageWithoutSuspense />
+    </Suspense>
+);
+
+export default FormPageWithSuspense;
