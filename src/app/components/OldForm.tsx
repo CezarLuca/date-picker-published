@@ -2,8 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-// import { supabase } from "@/utils/supabaseClient";
-import Captcha from "./Captcha";
+import { supabase } from "@/utils/supabaseClient";
 
 const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const router = useRouter();
@@ -13,17 +12,28 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [description, setDescription] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    const [captchaData, setCaptchaData] = useState(null); // New state for captcha data
-    // console.log(formData);
+    console.log(formData);
 
     useEffect(() => {
         if (formData.date) {
+            // const formattedDate = new Date(formData.date)
+            //     .toISOString()
+            //     .split("T")[0];
+            // setDate(formattedDate);
+            // console.log(formattedDate);
+
+            // Split the date into components
             const [year, month, day] = formData.date.split("-");
+
+            // Pad month and day with leading zeros if necessary
             const formattedMonth = month.padStart(2, "0");
             const formattedDay = day.padStart(2, "0");
+
+            // Reconstruct the date string
             const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
+
             setDate(formattedDate);
-            // console.log(`Formatted Date: ${formattedDate}`);
+            console.log(`Formatted Date: ${formattedDate}`);
         }
     }, [formData.date]);
 
@@ -37,72 +47,31 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             return;
         }
 
-        if (!captchaData) {
-            setError("Please complete the captcha");
-            return;
-        }
-
-        //     try {
-        //         const { error } = await supabase.from("events").insert([
-        //             {
-        //                 date,
-        //                 name,
-        //                 email,
-        //                 description,
-        //             },
-        //         ]);
-
-        //         if (error) {
-        //             setError("Something went wrong. Please try again.");
-        //             console.error(error);
-        //         } else {
-        //             setSuccess("Event scheduled successfully!");
-        //             setName("");
-        //             setEmail("");
-        //             setDescription("");
-        //             setDate("");
-        //         }
-        //     } catch (error) {
-        //         setError("Something went wrong. Please try again.");
-        //         console.error(error);
-        //     }
-        // };
-
         try {
-            const response = await fetch("/api/submit-form", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+            // const { data, error } = await supabase.from('events').insert([
+            const { error } = await supabase.from("events").insert([
+                {
                     date,
                     name,
                     email,
                     description,
-                    captchaData,
-                }),
-            });
+                },
+            ]);
 
-            const result = await response.json();
-
-            if (response.ok) {
+            if (error) {
+                setError("Something went wrong. Please try again.");
+                console.error(error);
+            } else {
                 setSuccess("Event scheduled successfully!");
                 setName("");
                 setEmail("");
                 setDescription("");
                 setDate("");
-                setCaptchaData(null);
-            } else {
-                setError(
-                    result.error || "Something went wrong. Please try again."
-                );
             }
         } catch (error) {
-            setError("An unexpected error occurred.");
+            setError("Something went wrong. Please try again.");
             console.error(error);
         }
-    };
-
-    const handleCaptchaSuccess = (data) => {
-        setCaptchaData(data);
     };
 
     return (
@@ -154,16 +123,21 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     className="w-full p-2 rounded bg-gray-700 text-gray-200"
                 />
             </div>
-
-            <Captcha onSuccess={handleCaptchaSuccess} />
-
             <button
                 type="submit"
                 className="w-full bg-gray-600 hover:bg-gray-700 text-gray-200 rounded p-2"
             >
                 Schedule Event{""}
             </button>
-
+            {/* {error && <p className="text-red-500 mt-4">{error}</p>}
+            {success && (
+                <p className="text-green-500 mt-4">
+                    {success}
+                    <button onClick={() => router.push("/")}>
+                        &larr; Back to Home Page
+                    </button>
+                </p>
+            )} */}
             {error && (
                 <div className="mt-4 bg-gray-600 border border-red-600 text-red-200 px-4 py-3 rounded">
                     <p>{error}</p>

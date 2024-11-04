@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -6,8 +8,19 @@ interface CaptchaImage {
     image_url: string;
     keyword: string;
 }
+interface CaptchaData {
+    selectedKeyword: string;
+    question: string;
+}
 
-const Captcha: React.FC<{ onSuccess: () => void }> = ({ onSuccess }) => {
+interface CaptchaProps {
+    onSuccess: (data: CaptchaData) => void;
+}
+
+// const Captcha: React.FC<{ onSuccess: () => void }> = ({
+//     onSuccess,
+// }) => {
+const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     const [images, setImages] = useState<CaptchaImage[]>([]);
     const [question, setQuestion] = useState<string>("");
     const [error, setError] = useState<string>("");

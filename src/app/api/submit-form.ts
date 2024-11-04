@@ -5,7 +5,7 @@ export default async function handler(
     res: NextApiResponse
 ) {
     if (req.method === "POST") {
-        const { fomrData } = req.body;
+        // const { fomrData } = req.body;
 
         // Perform server-side validation and handle form submission logic
         // For example, send the form data to your database
