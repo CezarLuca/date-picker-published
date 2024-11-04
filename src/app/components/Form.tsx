@@ -2,8 +2,12 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-// import { supabase } from "@/utils/supabaseClient";
-import Captcha from "./Captcha";
+import Captcha, { CaptchaData } from "./Captcha";
+
+// interface CaptchaData {
+//     selectedKeyword: string;
+//     question: string;
+// }
 
 const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const router = useRouter();
@@ -13,7 +17,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [description, setDescription] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    const [captchaData, setCaptchaData] = useState(null); // New state for captcha data
+    const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null); // New state for captcha data
     // console.log(formData);
 
     useEffect(() => {
@@ -41,32 +45,6 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             setError("Please complete the captcha");
             return;
         }
-
-        //     try {
-        //         const { error } = await supabase.from("events").insert([
-        //             {
-        //                 date,
-        //                 name,
-        //                 email,
-        //                 description,
-        //             },
-        //         ]);
-
-        //         if (error) {
-        //             setError("Something went wrong. Please try again.");
-        //             console.error(error);
-        //         } else {
-        //             setSuccess("Event scheduled successfully!");
-        //             setName("");
-        //             setEmail("");
-        //             setDescription("");
-        //             setDate("");
-        //         }
-        //     } catch (error) {
-        //         setError("Something went wrong. Please try again.");
-        //         console.error(error);
-        //     }
-        // };
 
         try {
             const response = await fetch("/api/submit-form", {
@@ -101,7 +79,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
         }
     };
 
-    const handleCaptchaSuccess = (data) => {
+    const handleCaptchaSuccess = (data: CaptchaData) => {
         setCaptchaData(data);
     };
 

@@ -8,7 +8,7 @@ interface CaptchaImage {
     image_url: string;
     keyword: string;
 }
-interface CaptchaData {
+export interface CaptchaData {
     selectedKeyword: string;
     question: string;
 }
@@ -46,7 +46,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
 
         if (data.success) {
             setError("");
-            onSuccess();
+            onSuccess({ selectedKeyword: keyword, question });
         } else {
             setError(`Incorrect selection. Please try again: ${data.error}`);
             refreshCaptcha();
