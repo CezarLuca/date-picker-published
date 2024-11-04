@@ -1,12 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { supabase } from "@/utils/supabaseClient";
 
-// interface CaptchaImage {
-//     id: number;
-//     image_url: string;
-//     keyword: string;
-// }
-
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse
@@ -32,16 +26,16 @@ export default async function handler(
             .status(200)
             .json({ images: selectedImages, question: randomImage.keyword });
     }
-    if (req.method === "POST") {
-        const { selectedKeyword, question } = req.body;
-        if (selectedKeyword === question) {
-            return res.status(200).json({ success: true });
-        } else {
-            return res
-                .status(400)
-                .json({ error: "Incorrect selection, please try again." });
-        }
-    }
+    // if (req.method === "POST") {
+    //     const { selectedKeyword, question } = req.body;
+    //     if (selectedKeyword === question) {
+    //         return res.status(200).json({ success: true });
+    //     } else {
+    //         return res
+    //             .status(400)
+    //             .json({ error: "Incorrect selection, please try again." });
+    //     }
+    // }
 
     res.setHeader("Allow", ["GET", "POST"]);
     res.status(405).json({ error: `Method ${req.method} Not Allowed` });

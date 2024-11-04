@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { supabase } from "@/utils/supabaseClient";
 
-const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
+const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const router = useRouter();
     const [date, setDate] = useState(formData.date || "");
     const [name, setName] = useState("");
@@ -159,4 +159,4 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     );
 };
 
-export default Form;
+export default OldForm;

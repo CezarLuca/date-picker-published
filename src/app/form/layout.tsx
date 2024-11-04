@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import Form from "../components/OldForm";
+import Form from "../components/Form";
 
 const FormPageWithoutSuspense: React.FC = () => {
     const searchParams = useSearchParams();
