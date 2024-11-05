@@ -137,7 +137,14 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
 
             <button
                 type="submit"
-                className="w-full bg-gray-600 hover:bg-gray-700 text-gray-200 rounded p-2"
+                className={`w-full ${
+                    !date || !name || !email || !description || !captchaData
+                        ? "bg-gray-500 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-600 text-gray-200 cursor-pointer"
+                } hover:bg-gray-700  rounded p-2`}
+                disabled={
+                    !date || !name || !email || !description || !captchaData
+                }
             >
                 Schedule Event{""}
             </button>
