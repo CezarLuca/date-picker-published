@@ -4,11 +4,6 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Captcha, { CaptchaData } from "./Captcha";
 
-// interface CaptchaData {
-//     selectedKeyword: string;
-//     question: string;
-// }
-
 const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const router = useRouter();
     const [date, setDate] = useState(formData.date || "");
@@ -18,7 +13,6 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null); // New state for captcha data
-    // console.log(formData);
 
     useEffect(() => {
         if (formData.date) {
@@ -27,7 +21,6 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             const formattedDay = day.padStart(2, "0");
             const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
             setDate(formattedDate);
-            // console.log(`Formatted Date: ${formattedDate}`);
         }
     }, [formData.date]);
 

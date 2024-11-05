@@ -1,7 +1,7 @@
-// import type { NextApiRequest, NextApiResponse } from "next";
 import { NextResponse } from "next/server";
-// import { supabase } from "@/utils/supabaseClient";
 import { supabaseServer } from "@/utils/supabaseServerClient";
+
+// const ENCRYPTION_FACTOR = 7919;
 
 interface CaptchaImage {
     id: number;
@@ -10,15 +10,24 @@ interface CaptchaImage {
 }
 
 interface CaptchaData {
-    selectedKeyword: string;
-    question: string;
+    selectedId: number;
+    questionId: number;
 }
 
-// export default async function handler(
-//     req: NextApiRequest,
-//     res: NextApiResponse
-// ) {
-//     if (req.method === "GET") {
+interface CaptchaImageDisplay {
+    id: number;
+    image_url: string;
+}
+
+interface CaptchaQuestion {
+    id: number;
+    keyword: string;
+}
+
+interface ImageResponseKeyword {
+    keyword: string;
+}
+
 export async function GET() {
     const { data, error } = await supabaseServer
         .from("captcha_images")
@@ -47,44 +56,71 @@ export async function GET() {
     const randomImage =
         selectedImages[Math.floor(Math.random() * selectedImages.length)];
 
-    // return res
-    //     .status(200)
-    //     .json({ images: selectedImages, question: randomImage.keyword });
+    // Split data into separate objects
+    const displayImages: CaptchaImageDisplay[] = selectedImages.map(
+        ({ id, image_url }) => ({
+            id,
+            image_url,
+        })
+    );
+
+    const questionData: CaptchaQuestion = {
+        id: randomImage.id,
+        keyword: randomImage.keyword,
+    };
+
     return NextResponse.json({
-        images: selectedImages,
-        question: randomImage.keyword,
+        images: displayImages,
+        questionId: questionData.id,
+        question: questionData.keyword,
     });
 }
-// if (req.method === "POST") {
-//     const { selectedKeyword, question } = req.body;
-//     if (selectedKeyword === question) {
-//         return res.status(200).json({ success: true });
-//     } else {
-//         return res
-//             .status(400)
-//             .json({ error: "Incorrect selection, please try again." });
-//     }
-// }
-
-// res.setHeader("Allow", ["GET", "POST"]);
-// res.status(405).json({ error: `Method ${req.method} Not Allowed` });
-
-// return res.status(405).json({ error: "Method not allowed" });
-// }
 
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { selectedKeyword, question } = body as CaptchaData;
+        const { selectedId, questionId } = body as CaptchaData;
 
-        if (!selectedKeyword || !question) {
+        if (!selectedId || !questionId) {
             return NextResponse.json(
                 { error: "Please complete the captcha" },
                 { status: 400 }
             );
         }
 
-        if (selectedKeyword !== question) {
+        // Fetch the actual keyword for the selected image
+        const { data: selectedData, error: selectedError } =
+            await supabaseServer
+                .from("captcha_images")
+                .select("keyword")
+                .eq("id", selectedId)
+                .single();
+
+        // Fetch the expected keyword for the question
+        const { data: expectedData, error: expectedError } =
+            await supabaseServer
+                .from("captcha_images")
+                .select("keyword")
+                .eq("id", questionId)
+                .single();
+
+        // Force TypeScript to treat data as ImageResponseKeyword
+        const selectedImage = selectedData as unknown as ImageResponseKeyword;
+        const expectedImage = expectedData as unknown as ImageResponseKeyword;
+
+        if (
+            selectedError ||
+            expectedError ||
+            !selectedImage ||
+            !expectedImage
+        ) {
+            return NextResponse.json(
+                { error: "Invalid captcha data." },
+                { status: 400 }
+            );
+        }
+
+        if (selectedImage.keyword !== expectedImage.keyword) {
             return NextResponse.json(
                 { error: "Incorrect selection, please try again." },
                 { status: 400 }

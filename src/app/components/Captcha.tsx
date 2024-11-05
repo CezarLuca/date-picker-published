@@ -6,34 +6,25 @@ import { useEffect, useState } from "react";
 interface CaptchaImage {
     id: number;
     image_url: string;
-    keyword: string;
 }
 export interface CaptchaData {
-    selectedKeyword: string;
-    question: string;
+    selectedId: number;
+    questionId: number;
 }
 
 interface CaptchaProps {
     onSuccess: (data: CaptchaData) => void;
 }
 
-// const Captcha: React.FC<{ onSuccess: () => void }> = ({
-//     onSuccess,
-// }) => {
 const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     const [images, setImages] = useState<CaptchaImage[]>([]);
     const [question, setQuestion] = useState<string>("");
+    const [questionId, setQuestionId] = useState<number | null>(null);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isVerified, setIsVerified] = useState<boolean>(false);
 
     useEffect(() => {
-        // const fetchCaptcha = async () => {
-        //     const res = await fetch("/api/captcha");
-        //     const data = await res.json();
-        //     setImages(data.images);
-        //     setQuestion(data.question);
-        // };
         fetchCaptcha();
     }, []);
 
@@ -44,11 +35,12 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
             const data = await res.json();
-            if (!data.images || !data.question) {
+            if (!data.images || !data.question || !data.questionId) {
                 throw new Error("Invalid response format");
             }
             setImages(data.images);
             setQuestion(data.question);
+            setQuestionId(data.questionId);
             setError("");
         } catch (err) {
             setError("Failed to load captcha images. Please try again.");
@@ -56,32 +48,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
         }
     };
 
-    // const handleImageClick = async (keyword: string) => {
-    //     const response = await fetch("/api/captcha", {
-    //         method: "POST",
-    //         headers: { "Content-Type": "application/json" },
-    //         body: JSON.stringify({ selectedKeyword: keyword, question }),
-    //     });
-
-    //     const data = await response.json();
-
-    //     if (data.success) {
-    //         setError("");
-    //         onSuccess({ selectedKeyword: keyword, question });
-    //     } else {
-    //         setError(`Incorrect selection. Please try again: ${data.error}`);
-    //         refreshCaptcha();
-    //     }
-    // };
-
-    // const refreshCaptcha = async () => {
-    //     const res = await fetch("/api/captcha");
-    //     const data = await res.json();
-    //     setImages(data.images);
-    //     setQuestion(data.question);
-    // };
-
-    const handleImageClick = async (keyword: string) => {
+    const handleImageClick = async (imageId: number) => {
         try {
             setIsLoading(true);
             setError("");
@@ -90,24 +57,19 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    selectedKeyword: keyword,
-                    question,
+                    selectedId: imageId,
+                    questionId: questionId,
                 }),
             });
-
-            // if (!response.ok) {
-            //     await fetchCaptcha();
-            //     throw new Error(`HTTP error! status: ${response.status}`);
-            // }
 
             const data = await response.json();
 
             if (data.success) {
                 setIsVerified(true);
-                onSuccess({ selectedKeyword: keyword, question });
+                onSuccess({ selectedId: imageId, questionId: questionId! });
             } else {
                 setError("Incorrect selection. Please try again.");
-                await fetchCaptcha();
+                // await fetchCaptcha();
             }
         } catch (err) {
             setError("An error occurred. Please try again.");
@@ -142,6 +104,21 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
         );
     }
 
+    if (error) {
+        return (
+            <div className="bg-gray-700 p-4 rounded">
+                <p className="text-red-500">{error}</p>
+                <button
+                    onClick={fetchCaptcha}
+                    disabled={isLoading}
+                    className="mt-4 px-4 py-2 bg-gray-600 text-gray-100 rounded"
+                >
+                    Retry Captcha
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div>
             <h3>
@@ -151,7 +128,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                 {images.map((image) => (
                     <button
                         key={image.id}
-                        onClick={() => handleImageClick(image.keyword)}
+                        onClick={() => handleImageClick(image.id)}
                         disabled={isLoading}
                         className="relative"
                     >
@@ -178,7 +155,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                 disabled={isLoading}
                 className="mt-4 mb-4 px-4 py-2 bg-gray-600 rounded"
             >
-                Refresh
+                Restart Captcha
             </button>
         </div>
     );
