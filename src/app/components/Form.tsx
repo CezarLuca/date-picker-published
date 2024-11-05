@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { z } from "zod";
 import Captcha, { CaptchaData } from "./Captcha";
 
 const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
@@ -13,6 +14,28 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null); // New state for captcha data
+
+    const formSchema = z.object({
+        name: z
+            .string()
+            .min(1)
+            .max(99)
+            .refine((val) => val.trim().split(/\s+/).length >= 2, {
+                message: "Name is too short",
+            })
+            .refine((val) => !/&/.test(val), {
+                message: "Name cannot contain '&'",
+            }),
+        email: z.string().email(),
+        description: z
+            .string()
+            .min(1)
+            .max(999)
+            .refine((val) => !/&/.test(val), {
+                message: "Description cannot contain '&'",
+            }),
+        captchaData: z.any(),
+    });
 
     useEffect(() => {
         if (formData.date) {
@@ -29,26 +52,21 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
         setError("");
         setSuccess("");
 
-        if (!name || !email || !description) {
-            setError("Please fill in all fields");
-            return;
-        }
-
-        if (!captchaData) {
-            setError("Please complete the captcha");
-            return;
-        }
-
         try {
+            // Validate form data using Zod
+            const formData = formSchema.parse({
+                name,
+                email,
+                description,
+                captchaData,
+            });
+
             const response = await fetch("/api/submit-form", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     date,
-                    name,
-                    email,
-                    description,
-                    captchaData,
+                    ...formData,
                 }),
             });
 
@@ -67,8 +85,11 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                 );
             }
         } catch (error) {
-            setError("An unexpected error occurred.");
-            console.error(error);
+            if (error instanceof z.ZodError) {
+                setError(error.errors.map((err) => err.message).join(", "));
+            } else {
+                setError("There was a problem submitting the form");
+            }
         }
     };
 

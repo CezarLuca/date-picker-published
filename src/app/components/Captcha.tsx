@@ -123,8 +123,9 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
 
     return (
         <div>
-            <h3>
-                Click on the image that best matches the keyword: {question}
+            <h3 className="text-gray-200 font-semibold mb-2">
+                Click on the image that best matches the keyword:{" "}
+                <span className="ml-2 text-gray-50 font-bold text-2xl">{`${question}`}</span>
             </h3>
             <div className="flex flex-wrap gap-2 justify-center">
                 {images.map((image) => (

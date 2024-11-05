@@ -1,27 +1,51 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/utils/supabaseServerClient";
+import { z } from "zod";
+
+const formSchema = z.object({
+    date: z.string(),
+    name: z
+        .string()
+        .min(1)
+        .max(99)
+        .refine((val) => val.trim().split(/\s+/).length >= 2, {
+            message: "Name must have at least two words",
+        })
+        .refine((val) => !/&/.test(val), {
+            message: "Name cannot contain '&'",
+        }),
+    email: z.string().email(),
+    description: z
+        .string()
+        .min(1)
+        .max(999)
+        .refine((val) => !/&/.test(val), {
+            message: "Description cannot contain '&'",
+        }),
+    captchaData: z.any(),
+});
 
 export async function POST(req: Request) {
-    const body = await req.json();
-    const { date, name, email, description } = body;
-
-    if (!name || !email || !description) {
-        return NextResponse.json(
-            { error: "Please fill in all fields" },
-            { status: 400 }
-        );
-    }
-
-    // Insert form data into the database
     try {
-        const { error } = await supabaseServer.from("events").insert([
-            {
-                date,
-                name,
-                email,
-                description,
-            },
-        ]);
+        const body = await req.json();
+
+        // Validate the request body using formSchema
+        const result = formSchema.safeParse(body);
+
+        if (!result.success) {
+            // Return validation errors
+            return NextResponse.json(
+                { error: result.error.issues[0].message },
+                { status: 400 }
+            );
+        }
+
+        const { date, name, email, description } = result.data;
+
+        // Insert validated data into database
+        const { error } = await supabaseServer
+            .from("events")
+            .insert([{ date, name, email, description }]);
 
         if (error) {
             return NextResponse.json(
