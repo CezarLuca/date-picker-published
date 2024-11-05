@@ -4,14 +4,13 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 interface CaptchaImage {
-    id: number;
+    encryptedId: number;
     image_url: string;
 }
 export interface CaptchaData {
-    selectedId: number;
-    questionId: number;
+    selectedEncryptedId: number;
+    questionEncryptedId: number;
 }
-
 interface CaptchaProps {
     onSuccess: (data: CaptchaData) => void;
 }
@@ -57,8 +56,8 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    selectedId: imageId,
-                    questionId: questionId,
+                    selectedEncryptedId: imageId,
+                    questionEncryptedId: questionId,
                 }),
             });
 
@@ -66,7 +65,10 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
 
             if (data.success) {
                 setIsVerified(true);
-                onSuccess({ selectedId: imageId, questionId: questionId! });
+                onSuccess({
+                    selectedEncryptedId: imageId,
+                    questionEncryptedId: questionId!,
+                });
             } else {
                 setError("Incorrect selection. Please try again.");
                 // await fetchCaptcha();
@@ -78,6 +80,8 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             setIsLoading(false);
         }
     };
+
+    console.log("images", images);
 
     if (isVerified) {
         return (
@@ -127,8 +131,8 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             <div className="flex gap-10">
                 {images.map((image) => (
                     <button
-                        key={image.id}
-                        onClick={() => handleImageClick(image.id)}
+                        key={image.encryptedId}
+                        onClick={() => handleImageClick(image.encryptedId)}
                         disabled={isLoading}
                         className="relative"
                     >
