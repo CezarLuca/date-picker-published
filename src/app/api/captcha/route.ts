@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { supabaseServer } from "@/utils/supabaseServerClient";
 import { CaptchaData } from "@/app/components/Captcha";
 
@@ -73,7 +73,7 @@ export async function GET() {
     });
 }
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { selectedEncryptedId, questionEncryptedId } =
@@ -97,6 +97,25 @@ export async function POST(req: Request) {
                 { status: 400 }
             );
         }
+
+        // Extract IP address from request headers
+        const ip =
+            req.headers.get("x-forwarded-for") ||
+            req.headers.get("x-real-ip") ||
+            "";
+
+        // Get the failed attempts from the database
+        const { data: attemptData } = (await supabaseServer
+            .from("captcha_attempts")
+            .select("failed_attempts")
+            .eq("ip_address", ip)
+            .single()) as { data: { failed_attempts: number } };
+
+        let failedAttempts = attemptData?.failed_attempts || 0;
+
+        // Introduce delay based on failed attempts
+        const delay = Math.min(failedAttempts * 1000, 30000); // Max delay of 30 seconds
+        await new Promise((res) => setTimeout(res, delay));
 
         // Fetch the actual keyword for the selected image
         const { data: selectedData, error: selectedError } =
@@ -131,10 +150,38 @@ export async function POST(req: Request) {
         }
 
         if (selectedImage.keyword !== expectedImage.keyword) {
+            // Increment failed attempts in the database
+            failedAttempts += 1;
+            if (attemptData) {
+                // Update existing record
+                await supabaseServer
+                    .from("captcha_attempts")
+                    .update({
+                        failed_attempts: failedAttempts,
+                        last_failed_at: new Date(),
+                    })
+                    .eq("ip_address", ip);
+            } else {
+                // Insert new record
+                await supabaseServer.from("captcha_attempts").insert({
+                    ip_address: ip,
+                    failed_attempts: failedAttempts,
+                    last_failed_at: new Date(),
+                });
+            }
+
             return NextResponse.json(
                 { error: "Incorrect selection, please try again." },
                 { status: 400 }
             );
+        }
+
+        // Reset failed attempts on successful verification
+        if (attemptData) {
+            await supabaseServer
+                .from("captcha_attempts")
+                .update({ failed_attempts: 0, last_failed_at: null })
+                .eq("ip_address", ip);
         }
 
         return NextResponse.json({ success: true }, { status: 200 });

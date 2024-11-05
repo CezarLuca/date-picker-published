@@ -81,8 +81,6 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
         }
     };
 
-    console.log("images", images);
-
     if (isVerified) {
         return (
             <div className="flex flex-col items-center justify-center p-4 bg-gray-700 rounded">
@@ -128,7 +126,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             <h3>
                 Click on the image that best matches the keyword: {question}
             </h3>
-            <div className="flex gap-10">
+            <div className="flex flex-wrap gap-2 justify-center">
                 {images.map((image) => (
                     <button
                         key={image.encryptedId}
@@ -139,9 +137,11 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                         <Image
                             quality={25}
                             priority={true}
-                            width={100}
-                            height={100}
-                            className={`${isLoading ? "opacity-50" : ""}`}
+                            width={150}
+                            height={150}
+                            className={`${
+                                isLoading ? "opacity-50" : ""
+                            } object-cover rounded`}
                             src={image.image_url}
                             alt={"captcha image"}
                         />
@@ -153,7 +153,6 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                     </button>
                 ))}
             </div>
-            {error && <p className="text-red-500 mt-2">{error}</p>}
             <button
                 onClick={fetchCaptcha}
                 disabled={isLoading}
