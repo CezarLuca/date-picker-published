@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { supabaseServer } from "@/utils/supabaseServerClient";
 
-// const ENCRYPTION_FACTOR = 7919;
+const ENCRYPTION_FACTORS = {
+    IMAGE: Number(process.env.CAPTCHA_IMAGE_ENCRYPTION),
+    QUESTION: Number(process.env.CAPTCHA_QUESTION_ENCRYPTION),
+} as const;
 
 interface CaptchaImage {
     id: number;
@@ -10,12 +13,12 @@ interface CaptchaImage {
 }
 
 interface CaptchaData {
-    selectedId: number;
-    questionId: number;
+    selectedEncryptedId: number;
+    questionEncryptedId: number;
 }
 
 interface CaptchaImageDisplay {
-    id: number;
+    encryptedId: number;
     image_url: string;
 }
 
@@ -57,15 +60,13 @@ export async function GET() {
         selectedImages[Math.floor(Math.random() * selectedImages.length)];
 
     // Split data into separate objects
-    const displayImages: CaptchaImageDisplay[] = selectedImages.map(
-        ({ id, image_url }) => ({
-            id,
-            image_url,
-        })
-    );
+    const displayImages: CaptchaImageDisplay[] = selectedImages.map((img) => ({
+        encryptedId: img.id * ENCRYPTION_FACTORS.IMAGE,
+        image_url: img.image_url,
+    }));
 
     const questionData: CaptchaQuestion = {
-        id: randomImage.id,
+        id: randomImage.id * ENCRYPTION_FACTORS.QUESTION,
         keyword: randomImage.keyword,
     };
 
@@ -79,11 +80,24 @@ export async function GET() {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { selectedId, questionId } = body as CaptchaData;
+        const { selectedEncryptedId, questionEncryptedId } =
+            body as CaptchaData;
 
-        if (!selectedId || !questionId) {
+        if (!selectedEncryptedId || !questionEncryptedId) {
             return NextResponse.json(
                 { error: "Please complete the captcha" },
+                { status: 400 }
+            );
+        }
+
+        // Decrypt IDs using different factors
+        const selectedId = selectedEncryptedId / ENCRYPTION_FACTORS.IMAGE;
+        const questionId = questionEncryptedId / ENCRYPTION_FACTORS.QUESTION;
+
+        // Verify both decrypted IDs are valid integers
+        if (!Number.isInteger(selectedId) || !Number.isInteger(questionId)) {
+            return NextResponse.json(
+                { error: "Invalid verification attempt" },
                 { status: 400 }
             );
         }
