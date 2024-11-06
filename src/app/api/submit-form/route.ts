@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { supabaseServer } from "@/utils/supabaseServerClient";
 import { z } from "zod";
+import { supabaseServer } from "@/utils/supabaseServerClient";
+import { sendFormSubmissionEmail } from "@/utils/emailService";
 
 const formSchema = z.object({
     date: z.string(),
@@ -52,6 +53,14 @@ export async function POST(req: Request) {
                 { error: `Error saving data: ${error.message}` },
                 { status: 500 }
             );
+        }
+
+        // Send email notification
+        try {
+            await sendFormSubmissionEmail({ date, name, email, description });
+        } catch (emailError) {
+            console.error("Error sending email:", emailError);
+            // Continue execution even if email fails
         }
 
         return NextResponse.json({ success: true }, { status: 200 });
