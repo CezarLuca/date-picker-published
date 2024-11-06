@@ -16,23 +16,24 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null); // New state for captcha data
 
     const formSchema = z.object({
+        date: z.string(),
         name: z
             .string()
-            .min(1)
-            .max(99)
+            .min(1, { message: "Name is required" })
+            .max(99, { message: "Name is too long" })
             .refine((val) => val.trim().split(/\s+/).length >= 2, {
-                message: "Name is too short",
+                message: "Name must have at least two words",
             })
-            .refine((val) => !/&/.test(val), {
-                message: "Name cannot contain '&'",
+            .refine((val) => !/[&\\|^<>]/.test(val), {
+                message: "Name contains invalid special characters",
             }),
-        email: z.string().email(),
+        email: z.string().email({ message: "Invalid email address" }),
         description: z
             .string()
-            .min(1)
-            .max(999)
-            .refine((val) => !/&/.test(val), {
-                message: "Description cannot contain '&'",
+            .min(1, { message: "Description is required" })
+            .max(999, { message: "Description is too long" })
+            .refine((val) => !/[&\\|^<>]/.test(val), {
+                message: "Description contains invalid special characters",
             }),
         captchaData: z.any(),
     });
@@ -55,6 +56,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
         try {
             // Validate form data using Zod
             const formData = formSchema.parse({
+                date,
                 name,
                 email,
                 description,
@@ -64,10 +66,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             const response = await fetch("/api/submit-form", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    date,
-                    ...formData,
-                }),
+                body: JSON.stringify(formData),
             });
 
             const result = await response.json();

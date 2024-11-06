@@ -11,16 +11,16 @@ const formSchema = z.object({
         .refine((val) => val.trim().split(/\s+/).length >= 2, {
             message: "Name must have at least two words",
         })
-        .refine((val) => !/&/.test(val), {
-            message: "Name cannot contain '&'",
+        .refine((val) => !/[&\\|^<>]/.test(val), {
+            message: "Name contains invalid special characters",
         }),
     email: z.string().email(),
     description: z
         .string()
         .min(1)
         .max(999)
-        .refine((val) => !/&/.test(val), {
-            message: "Description cannot contain '&'",
+        .refine((val) => !/[&\\|^<>]/.test(val), {
+            message: "Description contains invalid special characters",
         }),
     captchaData: z.any(),
 });
