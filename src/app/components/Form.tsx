@@ -103,8 +103,9 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     Date
                 </label>
                 <input
-                    type="date"
+                    type="text"
                     id="date"
+                    disabled={true}
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     className="w-full p-2 rounded bg-gray-700 text-gray-200"
@@ -127,7 +128,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     Email
                 </label>
                 <input
-                    type="email"
+                    type="text"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
