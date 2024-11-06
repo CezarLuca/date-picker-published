@@ -43,14 +43,29 @@ export async function POST(req: Request) {
 
         const { date, name, email, description } = result.data;
 
-        // Insert validated data into database
-        const { error } = await supabaseServer
-            .from("events")
-            .insert([{ date, name, email, description }]);
+        // Insert into both tables using Promise.all for better performance
+        const [eventsResult, scheduleResult] = await Promise.all([
+            supabaseServer
+                .from("events")
+                .insert([{ date, name, email, description }]),
+            supabaseServer.from("events_scheduled").insert([{ date }]),
+        ]);
 
-        if (error) {
+        // Check for errors in either insert operation
+        if (eventsResult.error) {
             return NextResponse.json(
-                { error: `Error saving data: ${error.message}` },
+                {
+                    error: `Error saving to events: ${eventsResult.error.message}`,
+                },
+                { status: 500 }
+            );
+        }
+
+        if (scheduleResult.error) {
+            return NextResponse.json(
+                {
+                    error: `Error saving to events_scheduled: ${scheduleResult.error.message}`,
+                },
                 { status: 500 }
             );
         }
