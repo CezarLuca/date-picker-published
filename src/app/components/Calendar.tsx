@@ -63,7 +63,7 @@ const Calendar: React.FC = () => {
     };
     const isCurrentMonth = months[0] === new Date().getMonth();
     return (
-        <div className="flex flex-wrap justify-center bg-gray-800 text-gray-200 p-4">
+        <div className="flex flex-wrap justify-center bg-gray-800 text-gray-200 p-2">
             <button
                 className={`w-full p-2 mb-4 rounded-full ${
                     isCurrentMonth
@@ -76,7 +76,7 @@ const Calendar: React.FC = () => {
                 &larr; Previous
             </button>
             <div className="w-full md:w-1/2 xl:w-1/3 p-2">
-                <div className="bg-gray-700 p-4 rounded">
+                <div className="bg-gray-700 p-2 rounded">
                     <h2 className="text-center mb-4">{`${
                         MONTH_NAMES[months[0] % 12]
                     } ${currentYear + Math.floor(months[0] / 12)}`}</h2>
@@ -98,7 +98,7 @@ const Calendar: React.FC = () => {
                 </div>
             </div>
             <div className="w-full md:w-1/2 xl:w-1/3 p-2 hidden md:block">
-                <div className="bg-gray-700 p-4 rounded">
+                <div className="bg-gray-700 p-2 rounded">
                     <h2 className="text-center mb-4">{`${
                         MONTH_NAMES[months[1] % 12]
                     } ${currentYear + Math.floor(months[1] / 12)}`}</h2>
@@ -120,7 +120,7 @@ const Calendar: React.FC = () => {
                 </div>
             </div>
             <div className="w-full md:w-1/2 xl:w-1/3 p-2 hidden xl:block">
-                <div className="bg-gray-700 p-4 rounded">
+                <div className="bg-gray-700 p-2 rounded">
                     <h2 className="text-center mb-4">{`${
                         MONTH_NAMES[months[2] % 12]
                     } ${currentYear + Math.floor(months[2] / 12)}`}</h2>

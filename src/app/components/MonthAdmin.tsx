@@ -216,7 +216,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     };
 
     return (
-        <div className="bg-gray-700 p-4 rounded">
+        <div className="bg-gray-700 px-2 rounded">
             <div className="grid grid-cols-7 grid-rows-7 gap-1 justify-center items-center">
                 {DAYS_OF_WEEK.map((day) => (
                     <div
