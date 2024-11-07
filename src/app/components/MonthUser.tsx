@@ -14,6 +14,7 @@ const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const router = useRouter();
     const [busyDays, setBusyDays] = useState<number[][]>([[]]);
+    const [scheduledDays, setScheduledDays] = useState<number[][]>([]);
 
     useEffect(() => {
         // Fetch busyDays from the database
@@ -42,8 +43,32 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 );
             }
         };
+        // Fetch scheduledDays from the database
+        const fetchScheduledDays = async () => {
+            const { data, error } = await supabase
+                .from("events_scheduled")
+                .select("date");
+
+            if (error) {
+                console.error("Error fetching scheduled days:", error);
+            } else {
+                setScheduledDays(
+                    data
+                        .filter((item) => item.date !== null)
+                        .map((item) => {
+                            const date = new Date(item.date);
+                            return [
+                                date.getDate(),
+                                date.getMonth() + 1,
+                                date.getFullYear(),
+                            ] as number[];
+                        })
+                );
+            }
+        };
 
         fetchBusyDays();
+        fetchScheduledDays();
     }, [currentMonth, currentYear]);
 
     const currentDate = new Date();
@@ -87,6 +112,12 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     currentMonth === busyMonth &&
                     currentYear === busyYear
             );
+            const isScheduled = scheduledDays.some(
+                ([schedDay, schedMonth, schedYear]) =>
+                    day === schedDay &&
+                    currentMonth === schedMonth &&
+                    currentYear === schedYear
+            );
             days.push(
                 <div
                     key={day}
@@ -95,6 +126,8 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                             ? "bg-gray-700 text-gray-500 text-center"
                             : isBusy
                             ? "bg-red-500 text-white cursor-not-allowed text-center"
+                            : isScheduled
+                            ? "bg-yellow-500 text-white cursor-not-allowed text-center"
                             : "bg-gray-700 hover:bg-gray-600 cursor-pointer text-center"
                     }`}
                     onClick={() => !isPast && !isBusy && handleDayClick(day)}

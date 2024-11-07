@@ -102,36 +102,18 @@ export type Database = {
                 };
                 Relationships: [];
             };
-            cabins: {
+            events_scheduled: {
                 Row: {
-                    created_at: string;
-                    description: string | null;
-                    discount: number | null;
                     id: number;
-                    image: string | null;
-                    max_capacity: number | null;
-                    name: string | null;
-                    regular_price: number | null;
+                    date: string | number | Date;
                 };
                 Insert: {
-                    created_at?: string;
-                    description?: string | null;
-                    discount?: number | null;
                     id?: number;
-                    image?: string | null;
-                    max_capacity?: number | null;
-                    name?: string | null;
-                    regular_price?: number | null;
+                    date?: string | number | Date;
                 };
                 Update: {
-                    created_at?: string;
-                    description?: string | null;
-                    discount?: number | null;
                     id?: number;
-                    image?: string | null;
-                    max_capacity?: number | null;
-                    name?: string | null;
-                    regular_price?: number | null;
+                    date?: string | number | Date;
                 };
                 Relationships: [];
             };
