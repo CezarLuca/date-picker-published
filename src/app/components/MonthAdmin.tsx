@@ -46,9 +46,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         const fetchScheduledDays = async () => {
             const { data, error } = await supabase
                 .from("events_scheduled")
-                .select("date")
-                .eq("month", currentMonth)
-                .eq("year", currentYear);
+                .select("date");
 
             if (error) {
                 console.error("Error fetching scheduled days:", error);
