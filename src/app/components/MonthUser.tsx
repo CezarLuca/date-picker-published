@@ -130,7 +130,12 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                             ? "bg-yellow-500 text-white cursor-not-allowed text-center"
                             : "bg-gray-700 hover:bg-gray-600 cursor-pointer text-center"
                     }`}
-                    onClick={() => !isPast && !isBusy && handleDayClick(day)}
+                    onClick={() =>
+                        !isPast &&
+                        !isBusy &&
+                        !isScheduled &&
+                        handleDayClick(day)
+                    }
                 >
                     {day}
                 </div>
