@@ -216,7 +216,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                             : isBusy
                             ? "bg-red-500 text-white cursor-not-allowed text-center"
                             : isScheduled
-                            ? "bg-yellow-500 text-white cursor-not-allowed text-center"
+                            ? "bg-yellow-500 text-white cursor-pointer text-center"
                             : "bg-gray-700 hover:bg-gray-600 cursor-pointer text-center"
                     }`}
                     onClick={() => !isPast && handleDayClick(day)}
@@ -274,7 +274,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     setSelectedDay(null);
                 }}
                 onConfirm={handleDeleteScheduledDay}
-                message="Are you sure you want to delete this scheduled day?"
+                message="Are you sure you want to delete this scheduled event? This action cannot be undone."
             />
         </>
     );

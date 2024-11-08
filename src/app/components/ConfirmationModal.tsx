@@ -14,38 +14,24 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0, 0, 0, 0.5)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 1000,
-            }}
-        >
-            <div
-                style={{
-                    backgroundColor: "white",
-                    padding: "20px",
-                    borderRadius: "8px",
-                    maxWidth: "400px",
-                }}
-            >
-                <p>{message}</p>
-                <div
-                    style={{
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        gap: "10px",
-                    }}
-                >
-                    <button onClick={onClose}>Cancel</button>
-                    <button onClick={onConfirm}>Confirm</button>
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-gray-900 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+                <p className="text-gray-200 mb-6">{message}</p>
+                <div className="flex justify-end gap-4">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 rounded-md bg-gray-800 text-gray-300 hover:bg-gray-700 
+                        transition-colors duration-200"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 rounded-md bg-gray-700 text-gray-200 hover:bg-gray-600 
+                        transition-colors duration-200"
+                    >
+                        Confirm
+                    </button>
                 </div>
             </div>
         </div>
