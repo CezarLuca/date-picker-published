@@ -49,8 +49,33 @@ export async function POST(req: Request) {
             );
         }
 
-        const { date, name, email, description } = result.data;
+        const { date, name, email, description, captchaData } = result.data;
+        const { selectedEncryptedId, questionEncryptedId } = captchaData;
 
+        // Verify captcha server-side
+        const captchaResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL}/api/captcha`,
+            // `/api/captcha`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    selectedEncryptedId,
+                    questionEncryptedId,
+                }),
+            }
+        );
+
+        const captchaResult = await captchaResponse.json();
+
+        if (!captchaResult.success) {
+            return NextResponse.json(
+                { error: "Captcha verification failed" },
+                { status: 400 }
+            );
+        }
+
+        // Continue with database operations only if captcha passes
         // Insert into both tables using Promise.all for better performance
         const [eventsResult, scheduleResult] = await Promise.all([
             supabaseServer

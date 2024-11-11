@@ -115,6 +115,8 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
         setIsVerified(true);
     };
 
+    // console.log("captchaData", captchaData);
+
     return (
         <form className="bg-gray-800 p-4 rounded" onSubmit={handleSubmit}>
             <div className="mb-4">
@@ -177,9 +179,9 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     !email ||
                     !description ||
                     !captchaData
-                        ? "bg-gray-500 text-gray-400 cursor-not-allowed"
-                        : "bg-gray-600 text-gray-200 cursor-pointer"
-                } hover:bg-gray-700  rounded p-2`}
+                        ? "bg-gray-400 text-gray-300 cursor-not-allowed"
+                        : "bg-gray-500 text-gray-200 cursor-pointer"
+                } hover:bg-gray-600  rounded p-2`}
                 disabled={
                     !date ||
                     !isVerified ||
