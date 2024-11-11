@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 // import Month from "./OldMonth";
 import MonthAdmin from "./MonthAdmin";
 import MonthUser from "./MonthUser";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "@/lib/utils/supabaseClient";
 
 const MONTH_NAMES = [
     "January",

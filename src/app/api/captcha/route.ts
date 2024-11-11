@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { supabaseServer } from "@/utils/supabaseServerClient";
-import { CaptchaData } from "@/app/components/Captcha";
+import { supabaseServer } from "@/lib/utils/supabaseServerClient";
+import { CaptchaData } from "@/components/Captcha";
 
 const ENCRYPTION_FACTORS = {
     IMAGE: Number(process.env.CAPTCHA_IMAGE_ENCRYPTION),

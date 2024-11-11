@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { cn } from "@/app/utils/helpers";
+import { cn } from "@/lib/utils/helpers";
 
 interface MaxWidthWrapperProps {
     className?: string;

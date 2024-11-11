@@ -1,5 +1,5 @@
-import Calendar from "@/app/components/Calendar";
-import { MaxWidthWrapper } from "@/app/components/MaxWidthWrapper";
+import Calendar from "@/components/Calendar";
+import { MaxWidthWrapper } from "@/components/MaxWidthWrapper";
 
 export default function Home() {
     return (

@@ -2,9 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { supabase } from "@/utils/supabaseClient";
+import { z } from "zod";
+import Captcha, { CaptchaData } from "./Captcha";
 
-const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
+const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const router = useRouter();
     const [date, setDate] = useState(formData.date || "");
     const [name, setName] = useState("");
@@ -12,28 +13,47 @@ const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [description, setDescription] = useState("");
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-    console.log(formData);
+    const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null); // New state for captcha data
+    const [isVerified, setIsVerified] = useState(false);
+
+    const formSchema = z.object({
+        date: z.string(),
+        name: z
+            .string()
+            .min(1, { message: "Name is required" })
+            .max(99, { message: "Name is too long" })
+            .refine((val) => val.trim().split(/\s+/).length >= 2, {
+                message: "Name must have at least two words",
+            })
+            .refine((val) => !/[&\\|^<>]/.test(val), {
+                message: "Name contains invalid special characters",
+            }),
+        email: z.string().email({ message: "Invalid email address" }),
+        description: z
+            .string()
+            .min(1, { message: "Description is required" })
+            .max(999, { message: "Description is too long" })
+            .refine((val) => !/[&\\|^<>]/.test(val), {
+                message: "Description contains invalid special characters",
+            }),
+        captchaData: z
+            .object({
+                selectedEncryptedId: z.number(),
+                questionEncryptedId: z.number(),
+            })
+            .nullable()
+            .refine((data) => data !== null, {
+                message: "Captcha verification is required",
+            }),
+    });
 
     useEffect(() => {
         if (formData.date) {
-            // const formattedDate = new Date(formData.date)
-            //     .toISOString()
-            //     .split("T")[0];
-            // setDate(formattedDate);
-            // console.log(formattedDate);
-
-            // Split the date into components
             const [year, month, day] = formData.date.split("-");
-
-            // Pad month and day with leading zeros if necessary
             const formattedMonth = month.padStart(2, "0");
             const formattedDay = day.padStart(2, "0");
-
-            // Reconstruct the date string
             const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
-
             setDate(formattedDate);
-            console.log(`Formatted Date: ${formattedDate}`);
         }
     }, [formData.date]);
 
@@ -42,36 +62,57 @@ const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
         setError("");
         setSuccess("");
 
-        if (!name || !email || !description) {
-            setError("Please fill in all fields");
+        if (!isVerified || !captchaData) {
+            setError("Please complete the captcha verification");
             return;
         }
 
         try {
-            // const { data, error } = await supabase.from('events').insert([
-            const { error } = await supabase.from("events").insert([
-                {
-                    date,
-                    name,
-                    email,
-                    description,
-                },
-            ]);
+            // Validate form data using Zod
+            const formData = formSchema.parse({
+                date,
+                name,
+                email,
+                description,
+                captchaData,
+            });
 
-            if (error) {
-                setError("Something went wrong. Please try again.");
-                console.error(error);
-            } else {
+            const response = await fetch("/api/submit-form", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(formData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
                 setSuccess("Event scheduled successfully!");
                 setName("");
                 setEmail("");
                 setDescription("");
                 setDate("");
+                setCaptchaData(null);
+            } else {
+                setCaptchaData(null);
+                setIsVerified(false);
+                setError(
+                    result.error || "Something went wrong. Please try again."
+                );
             }
         } catch (error) {
-            setError("Something went wrong. Please try again.");
-            console.error(error);
+            setCaptchaData(null);
+            setIsVerified(false);
+            if (error instanceof z.ZodError) {
+                setError(error.errors.map((err) => err.message).join(", "));
+            } else {
+                setError("There was a problem submitting the form");
+            }
         }
+    };
+
+    const handleCaptchaSuccess = (data: CaptchaData) => {
+        setCaptchaData(data);
+        setIsVerified(true);
     };
 
     return (
@@ -81,8 +122,9 @@ const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     Date
                 </label>
                 <input
-                    type="date"
+                    type="text"
                     id="date"
+                    disabled={true}
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     className="w-full p-2 rounded bg-gray-700 text-gray-200"
@@ -105,7 +147,7 @@ const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     Email
                 </label>
                 <input
-                    type="email"
+                    type="text"
                     id="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -123,21 +165,33 @@ const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     className="w-full p-2 rounded bg-gray-700 text-gray-200"
                 />
             </div>
+
+            <Captcha onSuccess={handleCaptchaSuccess} />
+
             <button
                 type="submit"
-                className="w-full bg-gray-600 hover:bg-gray-700 text-gray-200 rounded p-2"
+                className={`w-full ${
+                    !date ||
+                    !isVerified ||
+                    !name ||
+                    !email ||
+                    !description ||
+                    !captchaData
+                        ? "bg-gray-500 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-600 text-gray-200 cursor-pointer"
+                } hover:bg-gray-700  rounded p-2`}
+                disabled={
+                    !date ||
+                    !isVerified ||
+                    !name ||
+                    !email ||
+                    !description ||
+                    !captchaData
+                }
             >
                 Schedule Event{""}
             </button>
-            {/* {error && <p className="text-red-500 mt-4">{error}</p>}
-            {success && (
-                <p className="text-green-500 mt-4">
-                    {success}
-                    <button onClick={() => router.push("/")}>
-                        &larr; Back to Home Page
-                    </button>
-                </p>
-            )} */}
+
             {error && (
                 <div className="mt-4 bg-gray-600 border border-red-600 text-red-200 px-4 py-3 rounded">
                     <p>{error}</p>
@@ -159,4 +213,4 @@ const OldForm: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     );
 };
 
-export default OldForm;
+export default Form;

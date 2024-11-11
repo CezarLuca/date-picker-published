@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { supabaseServer } from "@/utils/supabaseServerClient";
-import { sendFormSubmissionEmail } from "@/utils/emailService";
+import { supabaseServer } from "@/lib/utils/supabaseServerClient";
+import { sendFormSubmissionEmail } from "@/lib/utils/emailService";
 
 const formSchema = z.object({
     date: z.string(),
@@ -23,7 +23,15 @@ const formSchema = z.object({
         .refine((val) => !/[&\\|^<>]/.test(val), {
             message: "Description contains invalid special characters",
         }),
-    captchaData: z.any(),
+    captchaData: z
+        .object({
+            selectedEncryptedId: z.number(),
+            questionEncryptedId: z.number(),
+        })
+        .nullable()
+        .refine((data) => data !== null, {
+            message: "Captcha verification is required",
+        }),
 });
 
 export async function POST(req: Request) {

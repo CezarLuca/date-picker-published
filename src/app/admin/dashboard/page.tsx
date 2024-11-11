@@ -1,10 +1,10 @@
 // src/app/admin/dashboard/page.tsx
 "use client";
 
-import withAuth from "@/app/utils/withAuth";
-import Calendar from "@/app/components/Calendar";
+import withAuth from "@/lib/utils/withAuth";
+import Calendar from "@/components/Calendar";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/utils/supabaseClient";
+import { supabase } from "@/lib/utils/supabaseClient";
 
 const AdminDashboard = () => {
     const router = useRouter();

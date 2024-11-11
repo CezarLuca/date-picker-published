@@ -37,6 +37,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             if (!data.images || !data.question || !data.questionId) {
                 throw new Error("Invalid response format");
             }
+            setIsVerified(false);
             setImages(data.images);
             setQuestion(data.question);
             setQuestionId(data.questionId);
@@ -49,6 +50,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
 
     const handleImageClick = async (imageId: number) => {
         try {
+            setIsVerified(false);
             setIsLoading(true);
             setError("");
 

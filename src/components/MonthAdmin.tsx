@@ -1,8 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { supabase } from "../../utils/supabaseClient";
+import { supabase } from "../lib/utils/supabaseClient";
+import ConfirmationModal from "./ConfirmationModal";
 
 interface MonthProps {
     currentMonth: number;
@@ -12,9 +12,10 @@ interface MonthProps {
 const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
-    const router = useRouter();
-    const [busyDays, setBusyDays] = useState<number[][]>([[]]);
+    const [busyDays, setBusyDays] = useState<number[][]>([]);
     const [scheduledDays, setScheduledDays] = useState<number[][]>([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
     useEffect(() => {
         // Fetch busyDays from the database
@@ -43,6 +44,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 );
             }
         };
+
         // Fetch scheduledDays from the database
         const fetchScheduledDays = async () => {
             const { data, error } = await supabase
@@ -71,6 +73,8 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         fetchScheduledDays();
     }, [currentMonth, currentYear]);
 
+    // console.log(busyDays);
+
     const currentDate = new Date();
     const isThisMonth =
         currentDate.getMonth() === currentMonth - 1 &&
@@ -85,8 +89,93 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     ).getDay();
     const adjustedLastDayOfMonth = (lastDayOfMonth + 6) % 7;
 
-    const handleDayClick = (day: number) => {
-        router.push(`/form?date=${currentYear}-${currentMonth}-${day}`);
+    const handleDayClick = async (day: number) => {
+        const isBusy = busyDays.some(
+            ([busyDay, busyMonth, busyYear]) =>
+                day === busyDay &&
+                currentMonth === busyMonth &&
+                currentYear === busyYear
+        );
+        const isScheduled = scheduledDays.some(
+            ([schedDay, schedMonth, schedYear]) =>
+                day === schedDay &&
+                currentMonth === schedMonth &&
+                currentYear === schedYear
+        );
+
+        if (isScheduled) {
+            setSelectedDay(day);
+            setIsModalOpen(true);
+            return; // Prevent modifying scheduled days
+        }
+
+        if (isBusy) {
+            // Remove the date from the database
+            const { error } = await supabase
+                .from("busy_days")
+                .delete()
+                .eq("day", day)
+                .eq("month", currentMonth)
+                .eq("year", currentYear);
+
+            if (error) {
+                console.error("Error removing busy day:", error);
+            } else {
+                setBusyDays(
+                    busyDays.filter(
+                        ([d, m, y]) =>
+                            !(
+                                d === day &&
+                                m === currentMonth &&
+                                y === currentYear
+                            )
+                    )
+                );
+            }
+        } else {
+            // Add the date to the database
+            const { error } = await supabase
+                .from("busy_days")
+                .insert([{ day, month: currentMonth, year: currentYear }]);
+
+            if (error) {
+                console.error("Error adding busy day:", error);
+            } else {
+                setBusyDays([...busyDays, [day, currentMonth, currentYear]]);
+            }
+        }
+    };
+
+    const handleDeleteScheduledDay = async () => {
+        if (selectedDay === null) return;
+
+        // Format date to YYYY-MM-DD
+        const formattedDate = `${currentYear}-${String(currentMonth).padStart(
+            2,
+            "0"
+        )}-${String(selectedDay).padStart(2, "0")}`;
+
+        const { error } = await supabase
+            .from("events_scheduled")
+            .delete()
+            .eq("date", formattedDate);
+
+        if (error) {
+            console.error("Error removing scheduled day:", error);
+        } else {
+            setScheduledDays(
+                scheduledDays.filter(
+                    ([d, m, y]) =>
+                        !(
+                            d === selectedDay &&
+                            m === currentMonth &&
+                            y === currentYear
+                        )
+                )
+            );
+        }
+        setIsModalOpen(false);
+        setSelectedDay(null);
     };
 
     const renderDays = () => {
@@ -127,15 +216,10 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                             : isBusy
                             ? "bg-red-500 text-white cursor-not-allowed text-center"
                             : isScheduled
-                            ? "bg-yellow-500 text-white cursor-not-allowed text-center"
+                            ? "bg-yellow-500 text-white cursor-pointer text-center"
                             : "bg-gray-700 hover:bg-gray-600 cursor-pointer text-center"
                     }`}
-                    onClick={() =>
-                        !isPast &&
-                        !isBusy &&
-                        !isScheduled &&
-                        handleDayClick(day)
-                    }
+                    onClick={() => !isPast && handleDayClick(day)}
                 >
                     {day}
                 </div>
@@ -169,19 +253,30 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     };
 
     return (
-        <div className="bg-gray-700 px-2 rounded">
-            <div className="grid grid-cols-7 grid-rows-7 gap-1 justify-center items-center">
-                {DAYS_OF_WEEK.map((day) => (
-                    <div
-                        key={day}
-                        className="p-2 m-1 font-bold justify-center items-center"
-                    >
-                        {day}
-                    </div>
-                ))}
-                {renderDays()}
+        <>
+            <div className="bg-gray-700 px-2 rounded">
+                <div className="grid grid-cols-7 grid-rows-7 gap-1 justify-center items-center">
+                    {DAYS_OF_WEEK.map((day) => (
+                        <div
+                            key={day}
+                            className="p-2 m-1 font-bold justify-center items-center"
+                        >
+                            {day}
+                        </div>
+                    ))}
+                    {renderDays()}
+                </div>
             </div>
-        </div>
+            <ConfirmationModal
+                isOpen={isModalOpen}
+                onClose={() => {
+                    setIsModalOpen(false);
+                    setSelectedDay(null);
+                }}
+                onConfirm={handleDeleteScheduledDay}
+                message="Are you sure you want to delete this scheduled event? This action cannot be undone."
+            />
+        </>
     );
 };
 
