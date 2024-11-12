@@ -60,7 +60,7 @@ export const UpcomingEvents: React.FC = () => {
         fetchEvents();
     }, []);
 
-    console.log(events);
+    // console.log(events);
 
     if (loading) return <div className="text-gray-300">Loading events...</div>;
     if (error) return <div className="text-red-500">Error: {error}</div>;
@@ -73,7 +73,7 @@ export const UpcomingEvents: React.FC = () => {
             {events.length === 0 ? (
                 <p className="text-gray-400">No upcoming events found</p>
             ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="flex flex-col gap-4">
                     {events.map((event) => (
                         <EventCard key={event.created_at} event={event} />
                     ))}
