@@ -17,6 +17,12 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
+    // Format date to YYYY-MM-DD
+    const formattedDate = `${currentYear}-${String(currentMonth).padStart(
+        2,
+        "0"
+    )}-${String(selectedDay).padStart(2, "0")}`;
+
     useEffect(() => {
         // Fetch busyDays from the database
         const fetchBusyDays = async () => {
@@ -149,12 +155,6 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const handleDeleteScheduledDay = async () => {
         if (selectedDay === null) return;
 
-        // Format date to YYYY-MM-DD
-        const formattedDate = `${currentYear}-${String(currentMonth).padStart(
-            2,
-            "0"
-        )}-${String(selectedDay).padStart(2, "0")}`;
-
         const { error } = await supabase
             .from("events_scheduled")
             .delete()
@@ -274,6 +274,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     setSelectedDay(null);
                 }}
                 onConfirm={handleDeleteScheduledDay}
+                selectedDate={selectedDay ? formattedDate : ""}
                 message="Are you sure you want to delete this scheduled event? This action cannot be undone."
             />
         </>

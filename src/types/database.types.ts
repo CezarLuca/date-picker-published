@@ -120,27 +120,30 @@ export type Database = {
             events: {
                 Row: {
                     created_at: string;
-                    date: string | null;
-                    description: string | null;
-                    email: string | null;
+                    date: string;
+                    description: string;
+                    email: string;
                     id: number;
-                    name: string | null;
+                    name: string;
+                    personal_notes?: string;
                 };
                 Insert: {
                     created_at?: string;
-                    date?: string | null;
-                    description?: string | null;
-                    email?: string | null;
+                    date?: string;
+                    description?: string;
+                    email?: string;
                     id?: number;
-                    name?: string | null;
+                    name?: string;
+                    personal_notes?: string;
                 };
                 Update: {
                     created_at?: string;
-                    date?: string | null;
-                    description?: string | null;
-                    email?: string | null;
+                    date?: string;
+                    description?: string;
+                    email?: string;
                     id?: number;
-                    name?: string | null;
+                    name?: string;
+                    personal_notes?: string;
                 };
                 Relationships: [];
             };
