@@ -35,6 +35,7 @@ export const UpcomingEvents: React.FC = () => {
                     .from("events")
                     .select(
                         `
+                    id,
                     date,
                     name,
                     email,
