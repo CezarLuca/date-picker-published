@@ -1,10 +1,10 @@
-// src/app/admin/dashboard/page.tsx
 "use client";
 
 import withAuth from "@/lib/utils/withAuth";
 import Calendar from "@/components/Calendar";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/utils/supabaseClient";
+import { UpcomingEvents } from "@/components/UpcomingEvents";
 
 const AdminDashboard = () => {
     const router = useRouter();
@@ -37,6 +37,7 @@ const AdminDashboard = () => {
                 </button>
             </div>
             <Calendar />
+            <UpcomingEvents />
         </div>
     );
 };
