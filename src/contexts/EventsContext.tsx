@@ -2,6 +2,7 @@ import {
     createContext,
     ReactNode,
     useCallback,
+    useContext,
     useEffect,
     useState,
 } from "react";
@@ -135,4 +136,12 @@ export function EventsProvider({ children }: { children: ReactNode }) {
             {children}
         </EventsContext.Provider>
     );
+}
+
+export function useEvents() {
+    const context = useContext(EventsContext);
+    if (!context) {
+        throw new Error("useEvents must be used within an EventsProvider");
+    }
+    return context;
 }
