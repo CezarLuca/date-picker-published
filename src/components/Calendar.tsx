@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 // import Month from "./OldMonth";
 import MonthAdmin from "./MonthAdmin";
 import MonthUser from "./MonthUser";
-import { supabase } from "@/lib/utils/supabaseClient";
+// import { supabase } from "@/lib/utils/supabaseClient";
+import { useAdmin } from "@/contexts/AdminContext";
 
 const MONTH_NAMES = [
     "January",
@@ -22,30 +23,31 @@ const MONTH_NAMES = [
 ];
 
 const Calendar: React.FC = () => {
-    const [isAdmin, setIsAdmin] = useState(false);
+    const { isAdmin } = useAdmin();
+    // const [isAdmin, setIsAdmin] = useState(false);
 
-    useEffect(() => {
-        const checkUser = async () => {
-            const { data } = await supabase.auth.getSession();
-            if (data.session) {
-                setIsAdmin(true);
-            } else {
-                setIsAdmin(false);
-            }
-        };
+    // useEffect(() => {
+    //     const checkUser = async () => {
+    //         const { data } = await supabase.auth.getSession();
+    //         if (data.session) {
+    //             setIsAdmin(true);
+    //         } else {
+    //             setIsAdmin(false);
+    //         }
+    //     };
 
-        checkUser();
+    //     checkUser();
 
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange(() => {
-            checkUser();
-        });
+    //     const {
+    //         data: { subscription },
+    //     } = supabase.auth.onAuthStateChange(() => {
+    //         checkUser();
+    //     });
 
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, []);
+    //     return () => {
+    //         subscription.unsubscribe();
+    //     };
+    // }, []);
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const [months, setMonths] = useState([

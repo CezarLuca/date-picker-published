@@ -94,6 +94,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         const emptyStartDays = adjustedFirstDayOfMonth;
         const emptyEndDays = 6 - adjustedLastDayOfMonth;
 
+        // Render empty cells for start of month
         for (let i = 0; i < emptyStartDays; i++) {
             days.push(
                 <div
@@ -104,6 +105,8 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 </div>
             );
         }
+
+        // Render days of the month
         for (let day = 1; day <= daysInMonth; day++) {
             const isPast = isThisMonth && day < currentDate.getDate();
             const isBusy = busyDays.some(
@@ -119,7 +122,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     currentYear === schedYear
             );
             days.push(
-                <div
+                <button
                     key={day}
                     className={`p-2 m-1 rounded ${
                         isPast
@@ -138,10 +141,11 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     }
                 >
                     {day}
-                </div>
+                </button>
             );
         }
 
+        // Render empty cells for end of month
         for (let i = 0; i < emptyEndDays; i++) {
             days.push(
                 <div
@@ -170,11 +174,11 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
 
     return (
         <div className="bg-gray-700 px-2 rounded">
-            <div className="grid grid-cols-7 grid-rows-7 gap-1 justify-center items-center">
+            <div className="grid grid-cols-7 grid-rows-7 gap-1 ">
                 {DAYS_OF_WEEK.map((day) => (
                     <div
                         key={day}
-                        className="p-2 m-1 font-bold justify-center items-center"
+                        className="p-2 font-bold text-center text-gray-300"
                     >
                         {day}
                     </div>

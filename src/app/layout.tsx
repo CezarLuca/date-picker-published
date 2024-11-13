@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { EventsProvider } from "@/contexts/EventsContext";
+import { AdminProvider } from "@/contexts/AdminContext";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -29,7 +30,9 @@ export default function RootLayout({
             <body
                 className={`${geistSans.variable} ${geistMono.variable} antialiased`}
             >
-                <EventsProvider>{children}</EventsProvider>
+                <AdminProvider>
+                    <EventsProvider>{children}</EventsProvider>
+                </AdminProvider>
             </body>
         </html>
     );

@@ -152,7 +152,9 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         // Render empty cells for start of month
         for (let i = 0; i < emptyStartDays; i++) {
             days.push(
-                <div key={`empty-start-${i}`} className="p-2 m-1 rounded" />
+                <div key={`empty-start-${i}`} className="p-2 m-1 rounded">
+                    {" "}
+                </div>
             );
         }
 
@@ -195,8 +197,23 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         // Render empty cells for end of month
         for (let i = 0; i < emptyEndDays; i++) {
             days.push(
-                <div key={`empty-end-${i}`} className="p-2 m-1 rounded" />
+                <div key={`empty-end-${i}`} className="p-2 m-1 rounded">
+                    {" "}
+                </div>
             );
+        }
+
+        if (days.length <= 35) {
+            for (let i = 0; i < 36 - days.length; i++) {
+                days.push(
+                    <div
+                        key={`height-adjust-${i + Math.random()}`}
+                        className="p-2 m-1 rounded"
+                    >
+                        {" "}
+                    </div>
+                );
+            }
         }
 
         return days;
@@ -205,11 +222,11 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     return (
         <>
             <div className="bg-gray-700 px-2 rounded">
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 grid-rows-7 gap-1 ">
                     {DAYS_OF_WEEK.map((day) => (
                         <div
                             key={day}
-                            className="p-2 text-center text-gray-300"
+                            className="p-2 font-bold text-center text-gray-300"
                         >
                             {day}
                         </div>
