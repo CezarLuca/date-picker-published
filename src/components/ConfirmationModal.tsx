@@ -79,7 +79,7 @@ const ConfirmationModal = ({
                                 <h3 className="text-sm font-medium text-gray-400">
                                     Description
                                 </h3>
-                                <p className="text-gray-200">
+                                <p className="text-gray-200 max-h-[4.5rem] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                                     {eventDetails.description}
                                 </p>
                             </div>
@@ -89,7 +89,7 @@ const ConfirmationModal = ({
                                     <h3 className="text-sm font-medium text-gray-400">
                                         Personal Notes
                                     </h3>
-                                    <p className="text-gray-200">
+                                    <p className="text-gray-200 max-h-[4.5rem] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                                         {eventDetails.personal_notes}
                                     </p>
                                 </div>
