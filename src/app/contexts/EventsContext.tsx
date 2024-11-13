@@ -52,4 +52,31 @@ export function EventsProvider({ children }: { children: ReactNode }) {
             setEvents([]);
         }
     };
+
+    const refreshEvents = async () => {
+        await Promise.all([fetchEvents(), fetchScheduledDates()]);
+    };
+
+    const updateEventNotes = async (eventId: string, notes: string) => {
+        const { error } = await supabase
+            .from("events")
+            .update({ personal_notes: notes })
+            .eq("id", eventId);
+        if (!error) {
+            await refreshEvents();
+        }
+        return error;
+    };
+
+    const deleteScheduledDate = async (date: string) => {
+        const { error } = await supabase
+            .from("events_scheduled")
+            .delete()
+            .eq("date", date);
+
+        if (!error) {
+            await refreshEvents();
+        }
+        return error;
+    };
 }
