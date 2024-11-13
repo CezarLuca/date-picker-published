@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/utils/supabaseClient";
 import ConfirmationModal from "./ConfirmationModal";
-import { useEvents } from "@/contexts/EventsContext";
 
 interface MonthProps {
     currentMonth: number;
@@ -14,9 +13,9 @@ const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const [busyDays, setBusyDays] = useState<number[][]>([]);
+    const [scheduledDays, setScheduledDays] = useState<number[][]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
-    const { scheduledDates, deleteScheduledDate } = useEvents();
 
     // Format date to YYYY-MM-DD
     const formattedDate = `${currentYear}-${String(currentMonth).padStart(
@@ -24,32 +23,18 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         "0"
     )}-${String(selectedDay).padStart(2, "0")}`;
 
-    // // Convert scheduledDates to array of [day, month, year]
-    // const scheduledDays = scheduledDates.map((date) => {
-    //     const [year, month, day] = date.split("-").map(Number);
-    //     return [day, month, year];
-    // });
-    // Convert scheduledDates to array of [day, month, year]
-    const scheduledDays = scheduledDates.map((dateStr) => {
-        const date = new Date(dateStr);
-        return [
-            date.getDate(),
-            date.getMonth() + 1, // Add 1 since getMonth() is zero-based
-            date.getFullYear(),
-        ];
-    });
-
     useEffect(() => {
+        // Fetch busyDays from the database
         const fetchBusyDays = async () => {
             const { data, error } = await supabase
                 .from("busy_days")
                 .select("day, month, year")
                 .eq("month", currentMonth)
                 .eq("year", currentYear);
-
             if (error) {
                 console.error("Error fetching busy days:", error);
             } else {
+                // console.log(data);
                 setBusyDays(
                     data
                         .filter(
@@ -66,8 +51,35 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
             }
         };
 
+        // Fetch scheduledDays from the database
+        const fetchScheduledDays = async () => {
+            const { data, error } = await supabase
+                .from("events_scheduled")
+                .select("date");
+
+            if (error) {
+                console.error("Error fetching scheduled days:", error);
+            } else {
+                setScheduledDays(
+                    data
+                        .filter((item) => item.date !== null)
+                        .map((item) => {
+                            const date = new Date(item.date);
+                            return [
+                                date.getDate(),
+                                date.getMonth() + 1,
+                                date.getFullYear(),
+                            ] as number[];
+                        })
+                );
+            }
+        };
+
         fetchBusyDays();
+        fetchScheduledDays();
     }, [currentMonth, currentYear]);
+
+    // console.log(busyDays);
 
     const currentDate = new Date();
     const isThisMonth =
@@ -84,25 +96,27 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const adjustedLastDayOfMonth = (lastDayOfMonth + 6) % 7;
 
     const handleDayClick = async (day: number) => {
-        const dateString = `${currentYear}-${String(currentMonth).padStart(
-            2,
-            "0"
-        )}-${String(day).padStart(2, "0")}`;
-        const isScheduled = scheduledDates.includes(dateString);
         const isBusy = busyDays.some(
             ([busyDay, busyMonth, busyYear]) =>
                 day === busyDay &&
                 currentMonth === busyMonth &&
                 currentYear === busyYear
         );
+        const isScheduled = scheduledDays.some(
+            ([schedDay, schedMonth, schedYear]) =>
+                day === schedDay &&
+                currentMonth === schedMonth &&
+                currentYear === schedYear
+        );
 
         if (isScheduled) {
             setSelectedDay(day);
             setIsModalOpen(true);
-            return;
+            return; // Prevent modifying scheduled days
         }
 
         if (isBusy) {
+            // Remove the date from the database
             const { error } = await supabase
                 .from("busy_days")
                 .delete()
@@ -125,6 +139,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 );
             }
         } else {
+            // Add the date to the database
             const { error } = await supabase
                 .from("busy_days")
                 .insert([{ day, month: currentMonth, year: currentYear }]);
@@ -139,7 +154,26 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
 
     const handleDeleteScheduledDay = async () => {
         if (selectedDay === null) return;
-        await deleteScheduledDate(formattedDate);
+
+        const { error } = await supabase
+            .from("events_scheduled")
+            .delete()
+            .eq("date", formattedDate);
+
+        if (error) {
+            console.error("Error removing scheduled day:", error);
+        } else {
+            setScheduledDays(
+                scheduledDays.filter(
+                    ([d, m, y]) =>
+                        !(
+                            d === selectedDay &&
+                            m === currentMonth &&
+                            y === currentYear
+                        )
+                )
+            );
+        }
         setIsModalOpen(false);
         setSelectedDay(null);
     };
@@ -149,14 +183,16 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         const emptyStartDays = adjustedFirstDayOfMonth;
         const emptyEndDays = 6 - adjustedLastDayOfMonth;
 
-        // Render empty cells for start of month
         for (let i = 0; i < emptyStartDays; i++) {
             days.push(
-                <div key={`empty-start-${i}`} className="p-2 m-1 rounded" />
+                <div
+                    key={`empty-start-${i + Math.random()}`}
+                    className="p-2 m-1 rounded"
+                >
+                    {" "}
+                </div>
             );
         }
-
-        // Render days of month
         for (let day = 1; day <= daysInMonth; day++) {
             const isPast = isThisMonth && day < currentDate.getDate();
             const isBusy = busyDays.some(
@@ -171,45 +207,59 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     currentMonth === schedMonth &&
                     currentYear === schedYear
             );
-
             days.push(
-                <button
+                <div
                     key={day}
-                    onClick={() => !isPast && handleDayClick(day)}
-                    className={`p-2 m-1 rounded transition-colors ${
+                    className={`p-2 m-1 rounded ${
                         isPast
-                            ? "text-gray-600"
-                            : isScheduled
-                            ? "bg-yellow-500 text-gray-200 hover:bg-yellow-600 cursor-pointer"
+                            ? "bg-gray-700 text-gray-500 text-center"
                             : isBusy
-                            ? "bg-red-700 text-gray-200 hover:bg-red-800 cursor-pointer"
-                            : "hover:bg-gray-800 text-gray-200 cursor-pointer"
+                            ? "bg-red-500 text-white cursor-not-allowed text-center"
+                            : isScheduled
+                            ? "bg-yellow-500 text-white cursor-pointer text-center"
+                            : "bg-gray-700 hover:bg-gray-600 cursor-pointer text-center"
                     }`}
-                    disabled={isPast}
+                    onClick={() => !isPast && handleDayClick(day)}
                 >
                     {day}
-                </button>
+                </div>
             );
         }
 
-        // Render empty cells for end of month
         for (let i = 0; i < emptyEndDays; i++) {
             days.push(
-                <div key={`empty-end-${i}`} className="p-2 m-1 rounded" />
+                <div
+                    key={`empty-end-${i + Math.random()}`}
+                    className="p-2 m-1 rounded"
+                >
+                    {" "}
+                </div>
             );
         }
 
+        if (days.length <= 35) {
+            for (let i = 0; i < 36 - days.length; i++) {
+                days.push(
+                    <div
+                        key={`height-adjust-${i + Math.random()}`}
+                        className="p-2 m-1 rounded"
+                    >
+                        {" "}
+                    </div>
+                );
+            }
+        }
         return days;
     };
 
     return (
         <>
             <div className="bg-gray-700 px-2 rounded">
-                <div className="grid grid-cols-7 gap-1">
+                <div className="grid grid-cols-7 grid-rows-7 gap-1 justify-center items-center">
                     {DAYS_OF_WEEK.map((day) => (
                         <div
                             key={day}
-                            className="p-2 text-center text-gray-300"
+                            className="p-2 m-1 font-bold justify-center items-center"
                         >
                             {day}
                         </div>

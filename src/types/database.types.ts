@@ -105,15 +105,15 @@ export type Database = {
             events_scheduled: {
                 Row: {
                     id: number;
-                    date: string | number | Date;
+                    date: string | Date;
                 };
                 Insert: {
                     id?: number;
-                    date?: string | number | Date;
+                    date?: string | Date;
                 };
                 Update: {
                     id?: number;
-                    date?: string | number | Date;
+                    date?: string | Date;
                 };
                 Relationships: [];
             };

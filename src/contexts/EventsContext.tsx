@@ -1,3 +1,5 @@
+"use client";
+
 import {
     createContext,
     ReactNode,
@@ -12,10 +14,11 @@ import { PostgrestError } from "@supabase/supabase-js";
 
 interface EventsContextType {
     events: Event[];
-    scheduledDates: (string | number | Date)[];
+    scheduledDates: (string | Date)[];
     refreshEvents: () => Promise<void>;
     updateEventNotes: (
-        eventId: string,
+        // eventId: string,
+        eventId: number,
         notes: string
     ) => Promise<PostgrestError | null>;
     deleteScheduledDate: (date: string) => Promise<PostgrestError | null>;
@@ -25,9 +28,7 @@ const EventsContext = createContext<EventsContextType | undefined>(undefined);
 
 export function EventsProvider({ children }: { children: ReactNode }) {
     const [events, setEvents] = useState<Event[]>([]);
-    const [scheduledDates, setScheduledDates] = useState<
-        (string | number | Date)[]
-    >([]);
+    const [scheduledDates, setScheduledDates] = useState<(string | Date)[]>([]);
 
     const fetchScheduledDates = useCallback(async () => {
         const today = new Date().toISOString().split("T")[0];
@@ -68,7 +69,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         await Promise.all([fetchEvents(), fetchScheduledDates()]);
     }, [fetchEvents, fetchScheduledDates]);
 
-    const updateEventNotes = async (eventId: string, notes: string) => {
+    const updateEventNotes = async (eventId: number, notes: string) => {
         const { error } = await supabase
             .from("events")
             .update({ personal_notes: notes })

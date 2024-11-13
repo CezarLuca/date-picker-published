@@ -1,4 +1,5 @@
-import { supabase } from "@/lib/utils/supabaseClient";
+import { useEvents } from "@/contexts/EventsContext";
+// import { supabase } from "@/lib/utils/supabaseClient";
 import { Event } from "@/types/types";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { useState } from "react";
@@ -17,20 +18,42 @@ const EditPersonalNotesModal = ({
     const [notes, setNotes] = useState(event.personal_notes || "");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { updateEventNotes } = useEvents();
 
-    const onSave = async (notes: string) => {
+    // const onSave = async (notes: string) => {
+    //     setIsLoading(true);
+    //     setError(null);
+
+    //     try {
+    //         const { error: updateError } = await supabase
+    //             .from("events")
+    //             .update({ personal_notes: notes })
+    //             .eq("id", event.id);
+
+    //         if (updateError) throw updateError;
+
+    //         // Close modal only if update was successful
+    //         onClose();
+    //     } catch (err) {
+    //         setError(
+    //             err instanceof Error ? err.message : "Failed to update notes"
+    //         );
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
+
+    // const handleSave = () => {
+    //     onSave(notes);
+    //     onClose();
+    // };
+
+    const handleSave = async () => {
         setIsLoading(true);
         setError(null);
 
         try {
-            const { error: updateError } = await supabase
-                .from("events")
-                .update({ personal_notes: notes })
-                .eq("id", event.id);
-
-            if (updateError) throw updateError;
-
-            // Close modal only if update was successful
+            await updateEventNotes(event.id, notes);
             onClose();
         } catch (err) {
             setError(
@@ -39,11 +62,6 @@ const EditPersonalNotesModal = ({
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const handleSave = () => {
-        onSave(notes);
-        onClose();
     };
 
     return (
