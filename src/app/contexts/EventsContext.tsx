@@ -1,13 +1,23 @@
-import { createContext, ReactNode, useState } from "react";
+import {
+    createContext,
+    ReactNode,
+    useCallback,
+    useEffect,
+    useState,
+} from "react";
 import { Event } from "@/types/types";
 import { supabase } from "@/lib/utils/supabaseClient";
+import { PostgrestError } from "@supabase/supabase-js";
 
 interface EventsContextType {
     events: Event[];
     scheduledDates: (string | number | Date)[];
     refreshEvents: () => Promise<void>;
-    updateEventNotes: (eventId: string, notes: string) => Promise<void>;
-    deleteScheduledDate: (date: string) => Promise<void>;
+    updateEventNotes: (
+        eventId: string,
+        notes: string
+    ) => Promise<PostgrestError | null>;
+    deleteScheduledDate: (date: string) => Promise<PostgrestError | null>;
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -18,7 +28,7 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         (string | number | Date)[]
     >([]);
 
-    const fetchScheduledDates = async () => {
+    const fetchScheduledDates = useCallback(async () => {
         const today = new Date().toISOString().split("T")[0];
         const { data, error } = await supabase
             .from("events_scheduled")
@@ -29,9 +39,9 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         if (!error && data) {
             setScheduledDates(data.map((item) => item.date));
         }
-    };
+    }, []); // No dependencies as it only uses supabase and setScheduledDates
 
-    const fetchEvents = async () => {
+    const fetchEvents = useCallback(async () => {
         const today = new Date().toISOString().split("T")[0];
         const { data: scheduledDates } = await supabase
             .from("events_scheduled")
@@ -51,11 +61,11 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         } else {
             setEvents([]);
         }
-    };
+    }, []);
 
-    const refreshEvents = async () => {
+    const refreshEvents = useCallback(async () => {
         await Promise.all([fetchEvents(), fetchScheduledDates()]);
-    };
+    }, [fetchEvents, fetchScheduledDates]);
 
     const updateEventNotes = async (eventId: string, notes: string) => {
         const { error } = await supabase
@@ -79,4 +89,50 @@ export function EventsProvider({ children }: { children: ReactNode }) {
         }
         return error;
     };
+
+    useEffect(() => {
+        refreshEvents();
+
+        // Set up real-time subscriptions
+        const eventSubscription = supabase
+            .channel("events-channel")
+            .on(
+                "postgres_changes",
+                { event: "*", schema: "public", table: "events_scheduled" },
+                () => refreshEvents()
+            )
+            .subscribe();
+
+        const scheduledSubscription = supabase
+            .channel("scheduled-channel")
+            .on(
+                "postgres_changes",
+                {
+                    event: "*",
+                    schema: "public",
+                    table: "events_scheduled",
+                },
+                () => refreshEvents()
+            )
+            .subscribe();
+
+        return () => {
+            eventSubscription.unsubscribe();
+            scheduledSubscription.unsubscribe();
+        };
+    }, [refreshEvents]);
+
+    return (
+        <EventsContext.Provider
+            value={{
+                events,
+                scheduledDates,
+                refreshEvents,
+                updateEventNotes,
+                deleteScheduledDate,
+            }}
+        >
+            {children}
+        </EventsContext.Provider>
+    );
 }
