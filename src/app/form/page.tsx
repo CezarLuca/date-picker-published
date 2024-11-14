@@ -4,7 +4,7 @@ import { Suspense, useEffect, useState } from "react";
 import Form from "../../components/Form";
 import { useAdmin } from "@/contexts/AdminContext";
 
-export default function FormPage() {
+function FormPageContent() {
     const searchParams = useSearchParams();
     const date = searchParams.get("date");
     const [formData, setFormData] = useState({ date: "" });
@@ -24,9 +24,17 @@ export default function FormPage() {
     }, [date]);
 
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <>
             <h1>Fill up the form to schedule an event</h1>
             <Form formData={formData} />
+        </>
+    );
+}
+
+export default function FormPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <FormPageContent />
         </Suspense>
     );
 }
