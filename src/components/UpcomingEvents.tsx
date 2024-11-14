@@ -1,12 +1,22 @@
 "use client";
 
+import { useEffect } from "react";
 import { useEvents } from "@/contexts/EventsContext";
 import { EventCard } from "./Event";
 
 export const UpcomingEvents: React.FC = () => {
-    const { events, isLoading } = useEvents();
+    const { events, isLoading, refreshEvents } = useEvents();
 
-    // if (!events) return <div className="text-gray-300">Loading events...</div>;
+    // Call refreshEvents on mount
+    useEffect(() => {
+        refreshEvents();
+    }, [refreshEvents]);
+
+    // Debug effect
+    useEffect(() => {
+        console.log("Events updated:", events);
+        console.log("Loading state:", isLoading);
+    }, [events, isLoading]);
 
     if (isLoading) {
         return (
