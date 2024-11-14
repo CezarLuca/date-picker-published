@@ -17,7 +17,11 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const [busyDays, setBusyDays] = useState<number[][]>([[]]);
     const [isLoading, setIsLoading] = useState(true);
     const [isBusyDaysLoading, setIsBusyDaysLoading] = useState(true);
-    const { scheduledDates, isLoading: isScheduledDatesLoading } = useEvents();
+    const {
+        scheduledDates,
+        isLoading: isScheduledDatesLoading,
+        refreshEvents,
+    } = useEvents();
 
     // Convert scheduledDates from context to the format we need
     const scheduledDays = scheduledDates.map((dateStr) => {
@@ -63,7 +67,8 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         };
 
         fetchBusyDays();
-    }, [currentMonth, currentYear]);
+        refreshEvents();
+    }, [currentMonth, currentYear, refreshEvents]);
 
     const currentDate = new Date();
     const isThisMonth =

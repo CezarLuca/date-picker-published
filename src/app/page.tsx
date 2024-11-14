@@ -1,7 +1,20 @@
+"use client";
+
 import Calendar from "@/components/Calendar";
 import { MaxWidthWrapper } from "@/components/MaxWidthWrapper";
+import { useAdmin } from "@/contexts/AdminContext";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Home() {
+    const { isAdmin } = useAdmin();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (isAdmin) {
+            router.push("/admin/dashboard");
+        }
+    }, [isAdmin, router]);
     return (
         <section>
             <MaxWidthWrapper className="text-center">

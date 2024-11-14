@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/utils/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useAdmin } from "@/contexts/AdminContext";
@@ -10,7 +10,13 @@ const AdminLogin = () => {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const router = useRouter();
-    const { setIsAdmin } = useAdmin();
+    const { isAdmin, setIsAdmin } = useAdmin();
+
+    useEffect(() => {
+        if (isAdmin) {
+            router.push("/admin/dashboard");
+        }
+    }, [isAdmin, router]);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();

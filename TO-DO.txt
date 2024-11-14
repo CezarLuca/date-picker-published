@@ -1,2 +1,5 @@
-- Add loading states:
-    - Add a loading state for the form submission
+(DONE) - Add loading states:
+        - Add a loading state for the form submission;
+- Fix overflow in UpcomingEvents and Modals
+- Add redirects based on Admin state
+- Add Delete and Edit Note buttons in Event component
