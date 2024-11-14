@@ -1,10 +1,8 @@
 "use client";
 
 import { useState } from "react";
-// import Month from "./OldMonth";
 import MonthAdmin from "./MonthAdmin";
 import MonthUser from "./MonthUser";
-// import { supabase } from "@/lib/utils/supabaseClient";
 import { useAdmin } from "@/contexts/AdminContext";
 
 const MONTH_NAMES = [
@@ -24,30 +22,6 @@ const MONTH_NAMES = [
 
 const Calendar: React.FC = () => {
     const { isAdmin } = useAdmin();
-    // const [isAdmin, setIsAdmin] = useState(false);
-
-    // useEffect(() => {
-    //     const checkUser = async () => {
-    //         const { data } = await supabase.auth.getSession();
-    //         if (data.session) {
-    //             setIsAdmin(true);
-    //         } else {
-    //             setIsAdmin(false);
-    //         }
-    //     };
-
-    //     checkUser();
-
-    //     const {
-    //         data: { subscription },
-    //     } = supabase.auth.onAuthStateChange(() => {
-    //         checkUser();
-    //     });
-
-    //     return () => {
-    //         subscription.unsubscribe();
-    //     };
-    // }, []);
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const [months, setMonths] = useState([
@@ -55,15 +29,16 @@ const Calendar: React.FC = () => {
         currentDate.getMonth() + 1,
         currentDate.getMonth() + 2,
     ]);
-    // const isAdmin = false;
-    // const isAdmin = true;
+
     const handleDecrement = () => {
         setMonths(months.map((month) => month - 1));
     };
     const handleIncrement = () => {
         setMonths(months.map((month) => month + 1));
     };
+
     const isCurrentMonth = months[0] === new Date().getMonth();
+
     return (
         <div className="flex flex-wrap justify-center bg-gray-800 text-gray-200 p-2">
             <button

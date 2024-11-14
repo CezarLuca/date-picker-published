@@ -12,12 +12,6 @@ export const UpcomingEvents: React.FC = () => {
         refreshEvents();
     }, [refreshEvents]);
 
-    // Debug effect
-    useEffect(() => {
-        console.log("Events updated:", events);
-        console.log("Loading state:", isLoading);
-    }, [events, isLoading]);
-
     if (isLoading) {
         return (
             <div className="flex justify-center items-center p-8">

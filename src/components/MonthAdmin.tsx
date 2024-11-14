@@ -24,11 +24,6 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         "0"
     )}-${String(selectedDay).padStart(2, "0")}`;
 
-    // // Convert scheduledDates to array of [day, month, year]
-    // const scheduledDays = scheduledDates.map((date) => {
-    //     const [year, month, day] = date.split("-").map(Number);
-    //     return [day, month, year];
-    // });
     // Convert scheduledDates to array of [day, month, year]
     const scheduledDays = scheduledDates.map((dateStr) => {
         const date = new Date(dateStr);
