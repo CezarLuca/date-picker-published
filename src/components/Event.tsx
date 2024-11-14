@@ -1,4 +1,4 @@
-// Event.tsx
+"use client";
 import { Event } from "@/types/types";
 import { formatDateTime } from "@/lib/utils/dateFormatter";
 import EditPersonalNotesModal from "./EditPersonalNotesModal";

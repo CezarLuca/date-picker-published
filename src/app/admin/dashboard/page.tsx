@@ -1,21 +1,25 @@
 "use client";
 
-import withAuth from "@/lib/utils/withAuth";
+// import withAuth from "@/lib/utils/withAuth";
 import Calendar from "@/components/Calendar";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/utils/supabaseClient";
 import { UpcomingEvents } from "@/components/UpcomingEvents";
+import { useAdmin } from "@/contexts/AdminContext";
 
 const AdminDashboard = () => {
     const router = useRouter();
+    const { setIsAdmin } = useAdmin();
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
+        setIsAdmin(false);
         router.push("/admin/login");
     };
 
     const goHome = async () => {
         await supabase.auth.signOut();
+        setIsAdmin(false);
         router.push("/");
     };
 
@@ -42,4 +46,5 @@ const AdminDashboard = () => {
     );
 };
 
-export default withAuth(AdminDashboard);
+// export default withAuth(AdminDashboard);
+export default AdminDashboard;

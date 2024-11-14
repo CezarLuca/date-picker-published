@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/utils/supabaseClient";
+import { useEvents } from "@/contexts/EventsContext";
 
 interface MonthProps {
     currentMonth: number;
@@ -14,7 +15,18 @@ const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const router = useRouter();
     const [busyDays, setBusyDays] = useState<number[][]>([[]]);
-    const [scheduledDays, setScheduledDays] = useState<number[][]>([]);
+    // const [scheduledDays, setScheduledDays] = useState<number[][]>([]);
+    const { scheduledDates } = useEvents();
+
+    // Convert scheduledDates from context to the format we need
+    const scheduledDays = scheduledDates.map((dateStr) => {
+        const date = new Date(dateStr);
+        return [
+            date.getDate(),
+            date.getMonth() + 1,
+            date.getFullYear(),
+        ] as number[];
+    });
 
     useEffect(() => {
         // Fetch busyDays from the database
@@ -43,32 +55,32 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 );
             }
         };
-        // Fetch scheduledDays from the database
-        const fetchScheduledDays = async () => {
-            const { data, error } = await supabase
-                .from("events_scheduled")
-                .select("date");
+        // // Fetch scheduledDays from the database
+        // const fetchScheduledDays = async () => {
+        //     const { data, error } = await supabase
+        //         .from("events_scheduled")
+        //         .select("date");
 
-            if (error) {
-                console.error("Error fetching scheduled days:", error);
-            } else {
-                setScheduledDays(
-                    data
-                        .filter((item) => item.date !== null)
-                        .map((item) => {
-                            const date = new Date(item.date);
-                            return [
-                                date.getDate(),
-                                date.getMonth() + 1,
-                                date.getFullYear(),
-                            ] as number[];
-                        })
-                );
-            }
-        };
+        //     if (error) {
+        //         console.error("Error fetching scheduled days:", error);
+        //     } else {
+        //         setScheduledDays(
+        //             data
+        //                 .filter((item) => item.date !== null)
+        //                 .map((item) => {
+        //                     const date = new Date(item.date);
+        //                     return [
+        //                         date.getDate(),
+        //                         date.getMonth() + 1,
+        //                         date.getFullYear(),
+        //                     ] as number[];
+        //                 })
+        //         );
+        //     }
+        // };
 
         fetchBusyDays();
-        fetchScheduledDays();
+        // fetchScheduledDays();
     }, [currentMonth, currentYear]);
 
     const currentDate = new Date();

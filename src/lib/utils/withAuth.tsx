@@ -1,4 +1,3 @@
-// src/app/utils/withAuth.tsx
 "use client";
 
 import { useEffect } from "react";
