@@ -15,6 +15,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
     const [success, setSuccess] = useState("");
     const [captchaData, setCaptchaData] = useState<CaptchaData | null>(null); // New state for captcha data
     const [isVerified, setIsVerified] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const formSchema = z.object({
         date: z.string(),
@@ -61,6 +62,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
         e.preventDefault();
         setError("");
         setSuccess("");
+        setIsSubmitting(true);
 
         if (!isVerified || !captchaData) {
             setError("Please complete the captcha verification");
@@ -107,6 +109,8 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             } else {
                 setError("There was a problem submitting the form");
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -191,7 +195,32 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                     !captchaData
                 }
             >
-                Schedule Event{""}
+                {isSubmitting ? (
+                    <span className="flex items-center justify-center">
+                        <svg
+                            className="animate-spin h-5 w-5 mr-3"
+                            viewBox="0 0 24 24"
+                        >
+                            <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                fill="none"
+                            />
+                            <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            />
+                        </svg>
+                        Scheduling...
+                    </span>
+                ) : (
+                    "Schedule Event"
+                )}
             </button>
 
             {error && (

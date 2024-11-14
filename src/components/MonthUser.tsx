@@ -15,8 +15,9 @@ const DAYS_OF_WEEK = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const router = useRouter();
     const [busyDays, setBusyDays] = useState<number[][]>([[]]);
-    // const [scheduledDays, setScheduledDays] = useState<number[][]>([]);
-    const { scheduledDates } = useEvents();
+    const [isLoading, setIsLoading] = useState(true);
+    const [isBusyDaysLoading, setIsBusyDaysLoading] = useState(true);
+    const { scheduledDates, isLoading: isScheduledDatesLoading } = useEvents();
 
     // Convert scheduledDates from context to the format we need
     const scheduledDays = scheduledDates.map((dateStr) => {
@@ -31,15 +32,15 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     useEffect(() => {
         // Fetch busyDays from the database
         const fetchBusyDays = async () => {
-            const { data, error } = await supabase
-                .from("busy_days")
-                .select("day, month, year")
-                .eq("month", currentMonth)
-                .eq("year", currentYear);
-            if (error) {
-                console.error("Error fetching busy days:", error);
-            } else {
-                // console.log(data);
+            setIsBusyDaysLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from("busy_days")
+                    .select("day, month, year")
+                    .eq("month", currentMonth)
+                    .eq("year", currentYear);
+                if (error) throw error;
+
                 setBusyDays(
                     data
                         .filter(
@@ -53,34 +54,15 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                                 [item.day, item.month, item.year] as number[]
                         )
                 );
+            } catch (error) {
+                console.error("Error fetching busy days:", error);
+            } finally {
+                setIsBusyDaysLoading(false);
+                setIsLoading(false);
             }
         };
-        // // Fetch scheduledDays from the database
-        // const fetchScheduledDays = async () => {
-        //     const { data, error } = await supabase
-        //         .from("events_scheduled")
-        //         .select("date");
-
-        //     if (error) {
-        //         console.error("Error fetching scheduled days:", error);
-        //     } else {
-        //         setScheduledDays(
-        //             data
-        //                 .filter((item) => item.date !== null)
-        //                 .map((item) => {
-        //                     const date = new Date(item.date);
-        //                     return [
-        //                         date.getDate(),
-        //                         date.getMonth() + 1,
-        //                         date.getFullYear(),
-        //                     ] as number[];
-        //                 })
-        //         );
-        //     }
-        // };
 
         fetchBusyDays();
-        // fetchScheduledDays();
     }, [currentMonth, currentYear]);
 
     const currentDate = new Date();
@@ -100,6 +82,17 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const handleDayClick = (day: number) => {
         router.push(`/form?date=${currentYear}-${currentMonth}-${day}`);
     };
+
+    // Loading UI components
+    const LoadingSkeleton = () => (
+        <div className="animate-pulse">
+            <div className="grid grid-cols-7 gap-1">
+                {[...Array(42)].map((_, i) => (
+                    <div key={i} className="h-12 bg-gray-600 rounded m-1"></div>
+                ))}
+            </div>
+        </div>
+    );
 
     const renderDays = () => {
         const days = [];
@@ -186,6 +179,12 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
 
     return (
         <div className="bg-gray-700 px-2 rounded">
+            {(isLoading || isBusyDaysLoading || isScheduledDatesLoading) && (
+                <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
+                    <LoadingSkeleton />
+                </div>
+            )}
+
             <div className="grid grid-cols-7 grid-rows-7 gap-1 ">
                 {DAYS_OF_WEEK.map((day) => (
                     <div

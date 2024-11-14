@@ -16,7 +16,14 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const [busyDays, setBusyDays] = useState<number[][]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedDay, setSelectedDay] = useState<number | null>(null);
-    const { scheduledDates, deleteScheduledDate } = useEvents();
+    const [isLoading, setIsLoading] = useState(true);
+    const [isBusyDaysLoading, setIsBusyDaysLoading] = useState(true);
+    const [isDayActionLoading, setIsDayActionLoading] = useState(false);
+    const {
+        scheduledDates,
+        deleteScheduledDate,
+        isLoading: isScheduledDatesLoading,
+    } = useEvents();
 
     // Format date to YYYY-MM-DD
     const formattedDate = `${currentYear}-${String(currentMonth).padStart(
@@ -36,15 +43,16 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
 
     useEffect(() => {
         const fetchBusyDays = async () => {
-            const { data, error } = await supabase
-                .from("busy_days")
-                .select("day, month, year")
-                .eq("month", currentMonth)
-                .eq("year", currentYear);
+            setIsBusyDaysLoading(true);
+            try {
+                const { data, error } = await supabase
+                    .from("busy_days")
+                    .select("day, month, year")
+                    .eq("month", currentMonth)
+                    .eq("year", currentYear);
 
-            if (error) {
-                console.error("Error fetching busy days:", error);
-            } else {
+                if (error) throw error;
+
                 setBusyDays(
                     data
                         .filter(
@@ -58,6 +66,11 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                                 [item.day, item.month, item.year] as number[]
                         )
                 );
+            } catch (error) {
+                console.error("Error fetching busy days:", error);
+            } finally {
+                setIsBusyDaysLoading(false);
+                setIsLoading(false);
             }
         };
 
@@ -79,56 +92,66 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const adjustedLastDayOfMonth = (lastDayOfMonth + 6) % 7;
 
     const handleDayClick = async (day: number) => {
-        const dateString = `${currentYear}-${String(currentMonth).padStart(
-            2,
-            "0"
-        )}-${String(day).padStart(2, "0")}`;
-        const isScheduled = scheduledDates.includes(dateString);
-        const isBusy = busyDays.some(
-            ([busyDay, busyMonth, busyYear]) =>
-                day === busyDay &&
-                currentMonth === busyMonth &&
-                currentYear === busyYear
-        );
+        setIsDayActionLoading(true);
+        try {
+            const dateString = `${currentYear}-${String(currentMonth).padStart(
+                2,
+                "0"
+            )}-${String(day).padStart(2, "0")}`;
+            const isScheduled = scheduledDates.includes(dateString);
+            const isBusy = busyDays.some(
+                ([busyDay, busyMonth, busyYear]) =>
+                    day === busyDay &&
+                    currentMonth === busyMonth &&
+                    currentYear === busyYear
+            );
 
-        if (isScheduled) {
-            setSelectedDay(day);
-            setIsModalOpen(true);
-            return;
-        }
-
-        if (isBusy) {
-            const { error } = await supabase
-                .from("busy_days")
-                .delete()
-                .eq("day", day)
-                .eq("month", currentMonth)
-                .eq("year", currentYear);
-
-            if (error) {
-                console.error("Error removing busy day:", error);
-            } else {
-                setBusyDays(
-                    busyDays.filter(
-                        ([d, m, y]) =>
-                            !(
-                                d === day &&
-                                m === currentMonth &&
-                                y === currentYear
-                            )
-                    )
-                );
+            if (isScheduled) {
+                setSelectedDay(day);
+                setIsModalOpen(true);
+                return;
             }
-        } else {
-            const { error } = await supabase
-                .from("busy_days")
-                .insert([{ day, month: currentMonth, year: currentYear }]);
 
-            if (error) {
-                console.error("Error adding busy day:", error);
+            if (isBusy) {
+                const { error } = await supabase
+                    .from("busy_days")
+                    .delete()
+                    .eq("day", day)
+                    .eq("month", currentMonth)
+                    .eq("year", currentYear);
+
+                if (error) {
+                    console.error("Error removing busy day:", error);
+                } else {
+                    setBusyDays(
+                        busyDays.filter(
+                            ([d, m, y]) =>
+                                !(
+                                    d === day &&
+                                    m === currentMonth &&
+                                    y === currentYear
+                                )
+                        )
+                    );
+                }
             } else {
-                setBusyDays([...busyDays, [day, currentMonth, currentYear]]);
+                const { error } = await supabase
+                    .from("busy_days")
+                    .insert([{ day, month: currentMonth, year: currentYear }]);
+
+                if (error) {
+                    console.error("Error adding busy day:", error);
+                } else {
+                    setBusyDays([
+                        ...busyDays,
+                        [day, currentMonth, currentYear],
+                    ]);
+                }
             }
+        } catch (error) {
+            console.error("Error handling day click:", error);
+        } finally {
+            setIsDayActionLoading(false);
         }
     };
 
@@ -138,6 +161,17 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         setIsModalOpen(false);
         setSelectedDay(null);
     };
+
+    // Loading UI components
+    const LoadingSkeleton = () => (
+        <div className="animate-pulse">
+            <div className="grid grid-cols-7 gap-1">
+                {[...Array(42)].map((_, i) => (
+                    <div key={i} className="h-12 bg-gray-600 rounded m-1"></div>
+                ))}
+            </div>
+        </div>
+    );
 
     const renderDays = () => {
         const days = [];
@@ -217,6 +251,14 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     return (
         <>
             <div className="bg-gray-700 px-2 rounded">
+                {(isLoading ||
+                    isBusyDaysLoading ||
+                    isScheduledDatesLoading) && (
+                    <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
+                        <LoadingSkeleton />
+                    </div>
+                )}
+
                 <div className="grid grid-cols-7 grid-rows-7 gap-1 ">
                     {DAYS_OF_WEEK.map((day) => (
                         <div
@@ -229,6 +271,13 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     {renderDays()}
                 </div>
             </div>
+
+            {isDayActionLoading && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-200"></div>
+                </div>
+            )}
+
             <ConfirmationModal
                 isOpen={isModalOpen}
                 onClose={() => {
@@ -238,6 +287,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 onConfirm={handleDeleteScheduledDay}
                 selectedDate={selectedDay ? formattedDate : ""}
                 message="Are you sure you want to delete this scheduled event? This action cannot be undone."
+                isLoading={isDayActionLoading}
             />
         </>
     );
