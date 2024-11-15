@@ -66,6 +66,7 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
 
         if (!isVerified || !captchaData) {
             setError("Please complete the captcha verification");
+            setIsSubmitting(false);
             return;
         }
 

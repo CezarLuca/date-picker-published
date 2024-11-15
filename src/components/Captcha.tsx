@@ -22,7 +22,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     const [questionId, setQuestionId] = useState<number | null>(null);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false);
+    const [isLoadingImages, setIsLoadingImages] = useState<boolean>(true);
     const [isVerified, setIsVerified] = useState<boolean>(false);
 
     useEffect(() => {
@@ -30,8 +30,9 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     }, []);
 
     const fetchCaptcha = async () => {
-        setIsLoadingImages(true);
         try {
+            setIsVerified(false);
+            setIsLoadingImages(true);
             const res = await fetch("/api/captcha");
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
@@ -40,17 +41,17 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             if (!data.images || !data.question || !data.questionId) {
                 throw new Error("Invalid response format");
             }
-            setIsLoadingImages(false);
-            setIsVerified(false);
             setImages(data.images);
             setQuestion(data.question);
             setQuestionId(data.questionId);
             setError("");
         } catch (err) {
-            setIsLoadingImages(false);
+            setIsLoadingImages(true);
             setIsVerified(false);
             setError("Failed to load captcha images. Please try again.");
             console.error("Fetch error:", err);
+        } finally {
+            setIsLoadingImages(false);
         }
     };
 
@@ -137,11 +138,9 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             </h3>
             <div className="flex flex-wrap gap-2 justify-center">
                 {isLoadingImages
-                    ? [
-                          ...Array(5).map((_, index) => (
-                              <LoadingImagePlaceholder key={index} />
-                          )),
-                      ]
+                    ? Array.from({ length: 5 }).map((_, index) => (
+                          <LoadingImagePlaceholder key={index} />
+                      ))
                     : images.map((image) => (
                           <button
                               key={image.encryptedId}
