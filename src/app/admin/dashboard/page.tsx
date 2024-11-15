@@ -6,17 +6,10 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/utils/supabaseClient";
 import { UpcomingEvents } from "@/components/UpcomingEvents";
 import { useAdmin } from "@/contexts/AdminContext";
-import { useEffect } from "react";
 
 const AdminDashboard = () => {
     const router = useRouter();
-    const { isAdmin, setIsAdmin } = useAdmin();
-
-    useEffect(() => {
-        if (!isAdmin) {
-            router.push("/admin/login");
-        }
-    }, [isAdmin, router]);
+    const { setIsAdmin } = useAdmin();
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -26,8 +19,8 @@ const AdminDashboard = () => {
 
     const goHome = async () => {
         await supabase.auth.signOut();
-        setIsAdmin(false);
         router.push("/");
+        setIsAdmin(false);
     };
 
     return (
@@ -53,5 +46,4 @@ const AdminDashboard = () => {
     );
 };
 
-// export default withAuth(AdminDashboard);
 export default AdminDashboard;
