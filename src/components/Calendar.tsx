@@ -41,19 +41,8 @@ const Calendar: React.FC = () => {
 
     return (
         <div className="flex flex-wrap justify-center bg-gray-800 text-gray-200 p-2">
-            <button
-                className={`w-full p-2 mb-4 rounded-full ${
-                    isCurrentMonth
-                        ? "text-gray-500 bg-gray-700"
-                        : "text-gray-200 bg-gray-600"
-                }`}
-                onClick={handleDecrement}
-                disabled={isCurrentMonth}
-            >
-                &larr; Previous
-            </button>
-            <div className="w-full md:w-1/2 xl:w-1/3 p-2">
-                <div className="bg-gray-700 p-2 rounded">
+            <div className="w-full md:w-1/2 xl:w-1/3 md:p-2 py-2">
+                <div className="bg-gray-700 md:p-2 py-2 rounded">
                     <h2 className="text-center mb-4">{`${
                         MONTH_NAMES[months[0] % 12]
                     } ${currentYear + Math.floor(months[0] / 12)}`}</h2>
@@ -118,12 +107,25 @@ const Calendar: React.FC = () => {
                     )}
                 </div>
             </div>
-            <button
-                className="w-full bg-gray-600 text-gray-200 rounded-full p-2 mt-4"
-                onClick={handleIncrement}
-            >
-                Next &rarr;
-            </button>
+            <span className="w-full flex flex-row gap-4 justify-between mt-1 mb-2 px-1 sm:px-4">
+                <button
+                    className={`w-40 p-2 rounded-full ${
+                        isCurrentMonth
+                            ? "text-gray-500 bg-gray-700"
+                            : "text-gray-200 bg-gray-600"
+                    }`}
+                    onClick={handleDecrement}
+                    disabled={isCurrentMonth}
+                >
+                    &larr; Previous
+                </button>
+                <button
+                    className="w-40 bg-gray-600 text-gray-200 rounded-full p-2"
+                    onClick={handleIncrement}
+                >
+                    Next &rarr;
+                </button>
+            </span>
         </div>
     );
 };

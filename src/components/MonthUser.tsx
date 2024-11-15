@@ -134,7 +134,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
             days.push(
                 <button
                     key={day}
-                    className={`p-2 m-1 rounded ${
+                    className={`p-2 m-1 text-center rounded ${
                         isPast
                             ? "bg-gray-700 text-gray-500 text-center"
                             : isBusy
@@ -183,14 +183,14 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     };
 
     return (
-        <div className="bg-gray-700 px-2 rounded">
+        <div className="bg-gray-700 md:px-2 rounded">
             {(isLoading || isBusyDaysLoading || isScheduledDatesLoading) && (
                 <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
                     <LoadingSkeleton />
                 </div>
             )}
 
-            <div className="grid grid-cols-7 grid-rows-7 gap-1 ">
+            <div className="grid grid-cols-7 grid-rows-7 gap-1 text-center">
                 {DAYS_OF_WEEK.map((day) => (
                     <div
                         key={day}

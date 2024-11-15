@@ -207,7 +207,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                 <button
                     key={day}
                     onClick={() => !isPast && handleDayClick(day)}
-                    className={`p-2 m-1 rounded transition-colors ${
+                    className={`p-2 m-1 rounded transition-colors text-center ${
                         isPast
                             ? "text-gray-600"
                             : isScheduled
@@ -250,7 +250,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
 
     return (
         <>
-            <div className="bg-gray-700 px-2 rounded">
+            <div className="bg-gray-700 md:px-2 rounded">
                 {(isLoading ||
                     isBusyDaysLoading ||
                     isScheduledDatesLoading) && (
@@ -259,7 +259,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                     </div>
                 )}
 
-                <div className="grid grid-cols-7 grid-rows-7 gap-1 ">
+                <div className="grid grid-cols-7 grid-rows-7 gap-1 text-center">
                     {DAYS_OF_WEEK.map((day) => (
                         <div
                             key={day}
