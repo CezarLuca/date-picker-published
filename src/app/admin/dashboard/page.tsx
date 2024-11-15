@@ -9,7 +9,7 @@ import { useAdmin } from "@/contexts/AdminContext";
 
 const AdminDashboard = () => {
     const router = useRouter();
-    const { setIsAdmin } = useAdmin();
+    const { isAdmin, setIsAdmin } = useAdmin();
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
@@ -37,7 +37,7 @@ const AdminDashboard = () => {
                     onClick={handleLogout}
                     className="absolute right-4 bg-gray-600 text-gray-200 p-2 rounded"
                 >
-                    Logout
+                    {isAdmin ? "Logout" : "Login"}
                 </button>
             </div>
             <Calendar />
