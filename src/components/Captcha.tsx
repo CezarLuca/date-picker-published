@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import LoadingImagePlaceholder from "./LoadingImagePlaceholder";
 
 interface CaptchaImage {
     encryptedId: number;
@@ -21,6 +22,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     const [questionId, setQuestionId] = useState<number | null>(null);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isLoadingImages, setIsLoadingImages] = useState<boolean>(false);
     const [isVerified, setIsVerified] = useState<boolean>(false);
 
     useEffect(() => {
@@ -28,6 +30,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     }, []);
 
     const fetchCaptcha = async () => {
+        setIsLoadingImages(true);
         try {
             const res = await fetch("/api/captcha");
             if (!res.ok) {
@@ -37,12 +40,15 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
             if (!data.images || !data.question || !data.questionId) {
                 throw new Error("Invalid response format");
             }
+            setIsLoadingImages(false);
             setIsVerified(false);
             setImages(data.images);
             setQuestion(data.question);
             setQuestionId(data.questionId);
             setError("");
         } catch (err) {
+            setIsLoadingImages(false);
+            setIsVerified(false);
             setError("Failed to load captcha images. Please try again.");
             console.error("Fetch error:", err);
         }
@@ -130,35 +136,43 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
                 <span className="ml-2 text-gray-50 font-bold text-2xl">{`${question}`}</span>
             </h3>
             <div className="flex flex-wrap gap-2 justify-center">
-                {images.map((image) => (
-                    <button
-                        key={image.encryptedId}
-                        onClick={() => handleImageClick(image.encryptedId)}
-                        disabled={isLoading}
-                        className="relative"
-                    >
-                        <Image
-                            quality={25}
-                            priority={true}
-                            width={150}
-                            height={150}
-                            className={`${
-                                isLoading ? "opacity-50" : ""
-                            } object-cover rounded`}
-                            src={image.image_url}
-                            alt={"captcha image"}
-                        />
-                        {isLoading && (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <span className="animate-spin">⌛</span>
-                            </div>
-                        )}
-                    </button>
-                ))}
+                {isLoadingImages
+                    ? [
+                          ...Array(5).map((_, index) => (
+                              <LoadingImagePlaceholder key={index} />
+                          )),
+                      ]
+                    : images.map((image) => (
+                          <button
+                              key={image.encryptedId}
+                              onClick={() =>
+                                  handleImageClick(image.encryptedId)
+                              }
+                              disabled={isLoading}
+                              className="relative"
+                          >
+                              <Image
+                                  quality={25}
+                                  priority={true}
+                                  width={150}
+                                  height={150}
+                                  className={`${
+                                      isLoading ? "opacity-50" : ""
+                                  } object-cover rounded`}
+                                  src={image.image_url}
+                                  alt={"captcha image"}
+                              />
+                              {isLoading && (
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                      <span className="animate-spin">⌛</span>
+                                  </div>
+                              )}
+                          </button>
+                      ))}
             </div>
             <button
                 onClick={fetchCaptcha}
-                disabled={isLoading}
+                disabled={isLoading || isLoadingImages}
                 className="mt-4 mb-4 px-4 py-2 bg-gray-600 rounded"
             >
                 Restart Captcha
