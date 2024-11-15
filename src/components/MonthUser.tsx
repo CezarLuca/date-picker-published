@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/utils/supabaseClient";
 import { useEvents } from "@/contexts/EventsContext";
+import CalendarDayPlaceholder from "./CalendarDayPlaceholder";
 
 interface MonthProps {
     currentMonth: number;
@@ -87,17 +88,6 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
     const handleDayClick = (day: number) => {
         router.push(`/form?date=${currentYear}-${currentMonth}-${day}`);
     };
-
-    // Loading UI components
-    const LoadingSkeleton = () => (
-        <div className="animate-pulse">
-            <div className="grid grid-cols-7 gap-1">
-                {[...Array(42)].map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-600 rounded m-1"></div>
-                ))}
-            </div>
-        </div>
-    );
 
     const renderDays = () => {
         const days = [];
@@ -184,12 +174,6 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
 
     return (
         <div className="bg-gray-700 md:px-2 rounded">
-            {(isLoading || isBusyDaysLoading || isScheduledDatesLoading) && (
-                <div className="absolute inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-10">
-                    <LoadingSkeleton />
-                </div>
-            )}
-
             <div className="grid grid-cols-7 grid-rows-7 gap-1 text-center">
                 {DAYS_OF_WEEK.map((day) => (
                     <div
@@ -199,7 +183,18 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
                         {day}
                     </div>
                 ))}
-                {renderDays()}
+                {isLoading || isBusyDaysLoading || isScheduledDatesLoading
+                    ? Array(42)
+                          .fill(0)
+                          .map((_, i) => (
+                              <div
+                                  key={`loading-${i}`}
+                                  className="p-2 m-1 rounded flex items-center justify-center"
+                              >
+                                  <CalendarDayPlaceholder />
+                              </div>
+                          ))
+                    : renderDays()}
             </div>
         </div>
     );
