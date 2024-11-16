@@ -110,7 +110,11 @@ export const EventCard: React.FC<EventProps> = ({ event }) => {
                         <h4 className="text-sm font-lg font-bold text-gray-300 mb-2 mt-1 ml-4">
                             Personal Notes
                         </h4>
-                        <div className="max-h-32 overflow-y-auto p-3 bg-gray-800 rounded border border-gray-600">
+                        <div
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="max-h-32 overflow-y-auto p-3 bg-gray-800 rounded border border-gray-600 
+            hover:border-gray-500 hover:bg-gray-750 cursor-pointer transition-colors"
+                        >
                             {event.personal_notes ? (
                                 <p className="text-gray-200 whitespace-pre-wrap">
                                     {event.personal_notes}
