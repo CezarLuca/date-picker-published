@@ -60,17 +60,12 @@ const EditPersonalNotesModal = ({
                     aria-hidden="true"
                 />
                 <div className="fixed inset-0 flex items-center justify-center p-4">
-                    <DialogPanel className="bg-gray-800 rounded-lg p-6 max-w-4xl w-full">
-                        <div className="flex flex-col gap-4 w-full">
+                    <DialogPanel className="bg-gray-800 rounded-lg p-3 max-w-4xl w-full">
+                        <div className="flex flex-col gap-2 w-full">
                             {/* Top Section */}
                             <div className="grid grid-cols-1 lg:grid-cols-[300px_100px_minmax(0,1fr)] gap-4">
                                 {/* Date and Delete Button Box */}
-                                <div
-                                    className="flex flex-row lg:flex-col items-center justify-between lg:justify-center gap-4 p-2
-                                    border bg-gray-800 border-gray-600
-                                    absolute lg:relative top-0 left-0 right-0 rounded-t-lg lg:rounded-lg
-                                    shadow-md min-w-[300px]"
-                                >
+                                <div className="flex flex-row lg:flex-col items-center justify-between lg:justify-center gap-4 p-2 border bg-gray-800 border-gray-600 rounded-lg shadow-md min-w-[300px]">
                                     <div className="text-center">
                                         <span className="text-2xl lg:text-4xl font-bold text-gray-200">
                                             {event.date}
@@ -85,6 +80,7 @@ const EditPersonalNotesModal = ({
                                         Delete
                                     </button>
                                 </div>
+
                                 {/* Arrow Separator */}
                                 <div className="hidden lg:flex items-center justify-center text-gray-400 min-w-[100px]">
                                     <svg
@@ -102,7 +98,7 @@ const EditPersonalNotesModal = ({
                                     </svg>
                                 </div>
                                 {/* Header Info Section */}
-                                <div className="mt-16 lg:mt-6 mb-4 min-w-0">
+                                <div className="lg:mt-6 mb-4 min-w-0">
                                     <h3 className="text-2xl font-bold text-gray-100 truncate">
                                         {event.name}
                                     </h3>
@@ -116,9 +112,9 @@ const EditPersonalNotesModal = ({
                                 </div>
                             </div>
                             {/* Description Section */}
-                            <div className="space-y-4">
+                            <div className="space-y-2">
                                 <div>
-                                    <h4 className="text-sm font-lg font-bold text-gray-300 mb-2 mt-1 ml-4">
+                                    <h4 className="text-sm font-lg font-bold text-gray-300 mb-1 mt-1 ml-4">
                                         Description
                                     </h4>
                                     <div className="max-h-32 overflow-y-auto p-3 bg-gray-800 rounded border border-gray-600">
@@ -129,7 +125,7 @@ const EditPersonalNotesModal = ({
                                 </div>
                                 {/* Personal Notes Edit Section */}
                                 <div>
-                                    <h4 className="text-sm font-lg font-bold text-gray-300 mb-2 mt-1 ml-4">
+                                    <h4 className="text-sm font-lg font-bold text-gray-300 mb-1 mt-1 ml-4">
                                         Edit Personal Notes
                                     </h4>
                                     <textarea
@@ -149,7 +145,7 @@ const EditPersonalNotesModal = ({
                                 </div>
                             </div>
                             {/* Action Buttons */}
-                            <div className="mt-6 flex justify-end gap-3">
+                            <div className="mt-2 flex justify-end gap-3">
                                 <button
                                     onClick={onClose}
                                     className="px-4 py-2 text-sm font-medium text-gray-200 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors"

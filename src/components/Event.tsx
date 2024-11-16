@@ -36,12 +36,7 @@ export const EventCard: React.FC<EventProps> = ({ event }) => {
                 {/* Top Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-[300px_100px_minmax(0,1fr)] gap-4">
                     {/* Date and Buttons Box */}
-                    <div
-                        className="flex flex-row lg:flex-col items-center justify-between lg:justify-center gap-4 p-2 
-        border bg-gray-800 border-gray-600 
-        absolute lg:relative top-0 left-0 right-0 rounded-t-lg lg:rounded-lg
-        shadow-md min-w-[300px]"
-                    >
+                    <div className="flex flex-row lg:flex-col items-center justify-between lg:justify-center gap-4 p-2 border bg-gray-800 border-gray-600 absolute lg:relative top-0 left-0 right-0 rounded-t-lg lg:rounded-lg shadow-md min-w-[300px]">
                         <div className="text-center">
                             <span className="text-2xl lg:text-4xl font-bold text-gray-200">
                                 {event.date}
