@@ -95,16 +95,18 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
                 setDescription("");
                 setDate("");
                 setCaptchaData(null);
+                setIsVerified(false); // Reset verification state
             } else {
-                setCaptchaData(null);
-                setIsVerified(false);
+                // setCaptchaData(null);
+                // setIsVerified(false);
                 setError(
                     result.error || "Something went wrong. Please try again."
                 );
+                setIsSubmitting(false); // Allow resubmission
             }
         } catch (error) {
-            setCaptchaData(null);
-            setIsVerified(false);
+            // setCaptchaData(null);
+            // setIsVerified(false);
             if (error instanceof z.ZodError) {
                 setError(error.errors.map((err) => err.message).join(", "));
             } else {
@@ -114,6 +116,17 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             setIsSubmitting(false);
         }
     };
+
+    // First, add a debug useEffect to track state changes
+    useEffect(() => {
+        console.log("Form State:", { isSubmitting, isVerified, error });
+    }, [isSubmitting, isVerified, error]);
+
+    // Add useEffect to reset error and submitting state when form fields change
+    useEffect(() => {
+        setError(""); // Clear error when user makes changes
+        setIsSubmitting(false); // Re-enable button when user makes changes
+    }, [name, email, description]); // Listen to form field changes
 
     const handleCaptchaSuccess = (data: CaptchaData) => {
         setCaptchaData(data);
@@ -178,23 +191,11 @@ const Form: React.FC<{ formData: { date: string } }> = ({ formData }) => {
             <button
                 type="submit"
                 className={`w-full ${
-                    !date ||
-                    !isVerified ||
-                    !name ||
-                    !email ||
-                    !description ||
-                    !captchaData
+                    isSubmitting || !isVerified
                         ? "bg-gray-400 text-gray-300 cursor-not-allowed"
                         : "bg-gray-500 text-gray-200 cursor-pointer"
                 } hover:bg-gray-600  rounded p-2`}
-                disabled={
-                    !date ||
-                    !isVerified ||
-                    !name ||
-                    !email ||
-                    !description ||
-                    !captchaData
-                }
+                disabled={isSubmitting || !isVerified}
             >
                 {isSubmitting ? (
                     <span className="flex items-center justify-center">
