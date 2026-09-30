@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import LoadingImagePlaceholder from "./LoadingImagePlaceholder";
 
 interface CaptchaImage {
@@ -25,11 +25,7 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
     const [isLoadingImages, setIsLoadingImages] = useState<boolean>(true);
     const [isVerified, setIsVerified] = useState<boolean>(false);
 
-    useEffect(() => {
-        fetchCaptcha();
-    }, []);
-
-    const fetchCaptcha = async () => {
+    const fetchCaptcha = useCallback(async () => {
         try {
             setIsVerified(false);
             setIsLoadingImages(true);
@@ -53,7 +49,11 @@ const Captcha: React.FC<CaptchaProps> = ({ onSuccess }) => {
         } finally {
             setIsLoadingImages(false);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        fetchCaptcha();
+    }, [fetchCaptcha]);
 
     const handleImageClick = async (imageId: number) => {
         try {

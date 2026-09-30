@@ -98,7 +98,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         for (let i = 0; i < emptyStartDays; i++) {
             days.push(
                 <div
-                    key={`empty-start-${i + Math.random()}`}
+                    key={`empty-start-${i}`}
                     className="p-2 m-1 rounded"
                 >
                     {" "}
@@ -149,7 +149,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
         for (let i = 0; i < emptyEndDays; i++) {
             days.push(
                 <div
-                    key={`empty-end-${i + Math.random()}`}
+                    key={`empty-end-${i}`}
                     className="p-2 m-1 rounded"
                 >
                     {" "}
@@ -161,7 +161,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
             for (let i = 0; i < 36 - days.length; i++) {
                 days.push(
                     <div
-                        key={`height-adjust-${i + Math.random()}`}
+                        key={`height-adjust-${i}`}
                         className="p-2 m-1 rounded"
                     >
                         {" "}

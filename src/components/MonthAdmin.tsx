@@ -226,7 +226,7 @@ const Month: React.FC<MonthProps> = ({ currentMonth, currentYear }) => {
             for (let i = 0; i < 36 - days.length; i++) {
                 days.push(
                     <div
-                        key={`height-adjust-${i + Math.random()}`}
+                        key={`height-adjust-${i}`}
                         className="p-2 m-1 rounded"
                     >
                         {" "}
