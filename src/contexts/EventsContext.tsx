@@ -14,7 +14,7 @@ import { PostgrestError } from "@supabase/supabase-js";
 
 interface EventsContextType {
     events: Event[];
-    scheduledDates: (string | Date)[];
+    scheduledDates: string[];
     isLoading: boolean;
     refreshEvents: () => Promise<void>;
     updateEventNotes: (
@@ -28,7 +28,7 @@ const EventsContext = createContext<EventsContextType | undefined>(undefined);
 
 export function EventsProvider({ children }: { children: ReactNode }) {
     const [events, setEvents] = useState<Event[]>([]);
-    const [scheduledDates, setScheduledDates] = useState<(string | Date)[]>([]);
+    const [scheduledDates, setScheduledDates] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     const refreshEvents = useCallback(async () => {
